@@ -1,0 +1,38 @@
+language: php
+
+php:
+  - 7.1
+
+matrix:
+  exclude:
+    - php: 5.5
+      env: TYPO3_VERSION="^8.7"
+    - php: 5.6
+      env: TYPO3_VERSION="^8.7"
+
+env:
+  - TYPO3_VERSION="^8.7"
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - parallel
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+install:
+  - composer install
+  - export TYPO3_PATH_ROOT=$PWD/.Build/public
+
+script:
+  - >
+    echo 'Functional Tests';
+    export typo3DatabaseName="typo3";
+    export typo3DatabaseHost="localhost";
+    export typo3DatabaseUsername="root";
+    export typo3DatabasePassword="";
+    $PWD/.Build/public/bin/phpunit -c $PWD/.Build/public/vendor/typo3/testing-framework/Resources/Core/Build/FunctionalTests.xml Tests/Functional/

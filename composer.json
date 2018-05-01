@@ -1,0 +1,66 @@
+{
+    "name": "rozbehsharahi/rest3",
+    "type": "typo3-cms-extension",
+    "description": "REST API for TYPO3 (currently 8.7)",
+    "keywords": [
+        "TYPO3",
+        "extension",
+        "rest",
+        "api",
+        "filter"
+    ],
+    "support": {
+        "issues": "https://github.com/rozbehsharahi/rest3/issues"
+    },
+    "authors": [
+        {
+            "name": "Rozbeh Chiryai Sharahi",
+            "email": "rozbeh.sharahi@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "typo3/cms": "8.7.13"
+    },
+    "require-dev": {
+        "typo3/testing-framework": "2.0.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "RozbehSharahi\\Rest3\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RozbehSharahi\\Rest3\\Tests\\": "Tests/"
+        }
+    },
+    "replace": {
+        "rest3": "self.version",
+        "typo3-ter/rest3": "self.version"
+    },
+    "config": {
+        "vendor-dir": ".Build/public/vendor",
+        "bin-dir": ".Build/public/bin"
+    },
+    "scripts": {
+        "link-extension": [
+            "@php -r 'is_dir($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/\") || mkdir($extFolder, 0777, true);'",
+            "@php -r 'file_exists($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/rest3\") || symlink(__DIR__,$extFolder);'",
+            "@php -r 'file_exists($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/rexample\") || symlink(__DIR__.\"/rexample\",$extFolder);'"
+        ],
+        "post-autoload-dump": [
+            "@link-extension"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        },
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/public"
+        }
+    }
+}
