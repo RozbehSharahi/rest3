@@ -1,0 +1,15 @@
+plugin.tx_rexample {
+    test = 1
+}
+
+plugin.tx_rest3 {
+    settings {
+        routes {
+            seminar {
+                strategy = class-method
+                className = RozbehSharahi\Rexample\SeminarRoute
+                method = route
+            }
+        }
+    }
+}
