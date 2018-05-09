@@ -2,7 +2,7 @@
 
 namespace RozbehSharahi\Rest3\Tests\Functional;
 
-use RozbehSharahi\Rest3\RouterManager\RouteManagerInterface;
+use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 
 class RouteManagerTest extends FunctionalTestBase
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace RozbehSharahi\Rest3\RouterManager;
+namespace RozbehSharahi\Rest3\Route;
 
 interface RouteManagerInterface
 {

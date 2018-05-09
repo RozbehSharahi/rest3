@@ -28,7 +28,8 @@
     },
     "autoload": {
         "psr-4": {
-            "RozbehSharahi\\Rest3\\": "Classes/"
+            "RozbehSharahi\\Rest3\\": "Classes/",
+            "RozbehSharahi\\Rexample\\": "rexample/Classes/"
         }
     },
     "autoload-dev": {
@@ -48,7 +49,8 @@
         "link-extension": [
             "@php -r 'is_dir($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/\") || mkdir($extFolder, 0777, true);'",
             "@php -r 'file_exists($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/rest3\") || symlink(__DIR__,$extFolder);'",
-            "@php -r 'file_exists($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/rexample\") || symlink(__DIR__.\"/rexample\",$extFolder);'"
+            "@php -r 'file_exists($extFolder=__DIR__.\"/.Build/public/typo3conf/ext/rexample\") || symlink(__DIR__.\"/rexample\",$extFolder);'",
+            "@php -r 'file_exists($extFile=__DIR__.\"/.Build/public/.htaccess\") || symlink(__DIR__.\"/.Build/public/vendor/typo3/cms/_.htaccess\",$extFile);'"
         ],
         "post-autoload-dump": [
             "@link-extension"

@@ -8,7 +8,12 @@ plugin.tx_rest3 {
             seminar {
                 strategy = class-method
                 className = RozbehSharahi\Rexample\SeminarRoute
-                method = route
+                methodName = dispatch
+            }
+            message {
+                strategy = class-method
+                className = RozbehSharahi\Rexample\MessageRoute
+                methodName = dispatch
             }
         }
     }

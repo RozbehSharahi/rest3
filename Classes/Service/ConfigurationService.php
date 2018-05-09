@@ -44,7 +44,11 @@ class ConfigurationService
         $settings = $this->configurationManager->getConfiguration(
             ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT
         )['plugin.']['tx_rest3.']['settings.'];
-        return $this->typoScriptService->convertTypoScriptArrayToPlainArray($settings);
+
+        // If there is no settings at all we return an empty routes configuration
+        return !empty($settings) ? $this->typoScriptService->convertTypoScriptArrayToPlainArray($settings) : [
+            'routes' => []
+        ];
     }
 
     /**
@@ -53,7 +57,11 @@ class ConfigurationService
      */
     public function getSetting(string $path)
     {
-        return ArrayUtility::getValueByPath($this->getSettings(), $path, '.');
+        try {
+            return ArrayUtility::getValueByPath($this->getSettings(), $path, '.');
+        } catch (\Exception $exception) {
+            return null;
+        }
     }
 
 }
