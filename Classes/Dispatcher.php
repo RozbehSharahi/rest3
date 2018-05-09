@@ -6,7 +6,7 @@ use Doctrine\Common\Util\Inflector;
 use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RozbehSharahi\Rest3\RequestStrategy\RequestStrategyManager;
+use RozbehSharahi\Rest3\RequestStrategy\RequestStrategyManagerInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 
 class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\DispatcherInterface
@@ -30,14 +30,14 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
     }
 
     /**
-     * @var RequestStrategyManager
+     * @var RequestStrategyManagerInterface
      */
     protected $requestStrategyManager;
 
     /**
-     * @param RequestStrategyManager $requestStrategyManager
+     * @param RequestStrategyManagerInterface $requestStrategyManager
      */
-    public function injectRequestStrategyManager(RequestStrategyManager $requestStrategyManager)
+    public function injectRequestStrategyManager(RequestStrategyManagerInterface $requestStrategyManager)
     {
         $this->requestStrategyManager = $requestStrategyManager;
     }

@@ -5,7 +5,7 @@ namespace RozbehSharahi\Rest3\RequestStrategy;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 
-class RequestStrategyManager
+class RequestStrategyManager implements RequestStrategyManagerInterface
 {
     /**
      * @var ObjectManager
