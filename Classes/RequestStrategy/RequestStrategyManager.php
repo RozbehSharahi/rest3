@@ -27,7 +27,7 @@ class RequestStrategyManager implements RequestStrategyManagerInterface
      * @return ResponseInterface
      * @throws \Exception
      */
-    public function run(string $strategy, array $configuration, array $parameters): ResponseInterface
+    public function run(string $strategy, array $configuration, array $parameters = []): ResponseInterface
     {
         if ($strategy === 'class-method') {
             return $this->runClassMethod($configuration, $parameters);

@@ -13,6 +13,6 @@ interface RequestStrategyManagerInterface
      * @param array $parameters
      * @return ResponseInterface
      */
-    public function run(string $strategy, array $configuration, array $parameters): ResponseInterface;
+    public function run(string $strategy, array $configuration, array $parameters=[]): ResponseInterface;
 
 }
