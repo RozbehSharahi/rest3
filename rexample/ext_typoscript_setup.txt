@@ -7,7 +7,7 @@ plugin.tx_rest3 {
         routes {
             seminar {
                 strategy = class-method
-                className = RozbehSharahi\Rexample\SeminarRoute
+                className = RozbehSharahi\Rexample\Controller\SeminarController
                 methodName = dispatch
             }
             message {
