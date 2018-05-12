@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
 class SimpleModelController implements DispatcherInterface
 {
@@ -19,6 +21,24 @@ class SimpleModelController implements DispatcherInterface
      * @var null
      */
     protected $modelName = null;
+
+    /**
+     * @var null
+     */
+    protected $repositoryName = null;
+
+    /**
+     * @var ObjectManager
+     */
+    protected $objectManager;
+
+    /**
+     * @param ObjectManager $objectManager
+     */
+    public function injectObjectManager(ObjectManager $objectManager)
+    {
+        $this->objectManager = $objectManager;
+    }
 
     /**
      * Main method to dispatch a request and its response to a callable object
@@ -48,7 +68,6 @@ class SimpleModelController implements DispatcherInterface
                 array_merge($match['params'], [$request, $response])
             );
         }
-
         return $this->jsonResponse('404', 404);
     }
 
@@ -59,7 +78,7 @@ class SimpleModelController implements DispatcherInterface
      */
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $response->withBody(stream_for('Find all was called'));
+        return $this->jsonResponse($this->getRepository()->findAll()->toArray());
     }
 
     /**
@@ -88,6 +107,16 @@ class SimpleModelController implements DispatcherInterface
     {
         $routeKey = explode('/', trim($request->getUri()->getPath(), '/'))[1];
         return Inflector::singularize($routeKey);
+    }
+
+    /**
+     * @return RepositoryInterface
+     */
+    protected function getRepository() : RepositoryInterface
+    {
+        /** @var RepositoryInterface $repository */
+        $repository = $this->objectManager->get($this->repositoryName);
+        return $repository;
     }
 
 }

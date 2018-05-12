@@ -18,7 +18,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
         /** @var DispatcherInterface $dispatcher */
         $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
         $response = $dispatcher->dispatch(
-            new ServerRequest('GET',new Uri('/rest3/seminar/does-not-exist/definitely/not')),
+            new ServerRequest('GET', new Uri('/rest3/seminar/does-not-exist/definitely/not')),
             new Response()
         );
 
@@ -30,14 +30,24 @@ class SimpleModelControllerTest extends FunctionalTestBase
      */
     public function canFindAll()
     {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'First Seminar',
+            ],
+            [
+                'title' => 'Second Seminar',
+            ]
+        ]);
+
         /** @var DispatcherInterface $dispatcher */
         $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
         $response = $dispatcher->dispatch(
-            new ServerRequest('GET',new Uri('/rest3/seminar')),
+            new ServerRequest('GET', new Uri('/rest3/seminar')),
             new Response()
         );
         self::assertEquals(200, $response->getStatusCode());
-        self::assertEquals('Find all was called',$response->getBody());
+        self::assertCount(2, json_decode($response->getBody()));
     }
 
 }
