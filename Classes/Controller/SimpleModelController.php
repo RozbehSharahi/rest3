@@ -5,10 +5,12 @@ namespace RozbehSharahi\Rest3\Controller;
 use Doctrine\Common\Util\Inflector;
 use GuzzleHttp\Psr7\Response;
 use function GuzzleHttp\Psr7\stream_for;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
+use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -26,6 +28,11 @@ class SimpleModelController implements DispatcherInterface
      * @var null
      */
     protected $repositoryName = null;
+
+    /**
+     * @var RepositoryInterface
+     */
+    protected $repository;
 
     /**
      * @var ObjectManager
@@ -54,10 +61,14 @@ class SimpleModelController implements DispatcherInterface
         string $routeKey = ''
     ): ResponseInterface {
         $router = new \AltoRouter();
-        $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->getRouteKey($request) . '/');
+        $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->getRouteKey($request));
 
         $router->map('GET', '/?', function () use ($request, $response) {
             return $this->findAll($request, $response);
+        });
+
+        $router->map('GET', '/[i:id]/?', function ($id) use ($request, $response) {
+            return $this->show($request, $response, $id);
         });
 
         // In case we have a match
@@ -112,11 +123,27 @@ class SimpleModelController implements DispatcherInterface
     /**
      * @return RepositoryInterface
      */
-    protected function getRepository() : RepositoryInterface
+    protected function getRepository(): RepositoryInterface
     {
-        /** @var RepositoryInterface $repository */
-        $repository = $this->objectManager->get($this->repositoryName);
-        return $repository;
+        if (is_null($this->repository)) {
+            /** @var RepositoryInterface $repository */
+            $repository = $this->objectManager->get($this->repositoryName);
+            $this->repository = $repository;
+        }
+        return $this->repository;
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param ResponseInterface $response
+     * @param int $id
+     * @return ResponseInterface
+     */
+    protected function show(RequestInterface $request, ResponseInterface $response, $id): ResponseInterface
+    {
+        /** @var DomainObjectInterface $model */
+        $model = $this->getRepository()->findByUid($id);
+        return $this->jsonResponse(json_encode($model->_getProperties()));
     }
 
 }

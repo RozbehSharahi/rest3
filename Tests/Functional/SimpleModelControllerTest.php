@@ -50,4 +50,26 @@ class SimpleModelControllerTest extends FunctionalTestBase
         self::assertCount(2, json_decode($response->getBody()));
     }
 
+    /**
+     * @test
+     */
+    public function canShow()
+    {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'A Seminar',
+            ]
+        ]);
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            new ServerRequest('GET', new Uri('/rest3/seminar/1/')),
+            new Response()
+        );
+        self::assertEquals(200, $response->getStatusCode());
+        self::assertNotEmpty($response->getBody()->__toString());
+    }
+
 }
