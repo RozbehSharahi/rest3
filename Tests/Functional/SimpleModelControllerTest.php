@@ -72,4 +72,22 @@ class SimpleModelControllerTest extends FunctionalTestBase
         self::assertNotEmpty($response->getBody()->__toString());
     }
 
+    /**
+     * @test
+     */
+    public function canShowOptions()
+    {
+        $this->setUpTestWebsite();
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            new ServerRequest('OPTIONS', new Uri('/rest3/seminar/')),
+            new Response()
+        );
+        self::assertEquals(200, $response->getStatusCode());
+        self::assertEquals('HEAD,GET,PUT,DELETE,OPTIONS', $response->getHeader('Allow')[0]);
+        self::assertEquals('null',$response->getBody()->__toString());
+    }
+
 }

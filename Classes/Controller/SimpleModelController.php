@@ -63,10 +63,12 @@ class SimpleModelController implements DispatcherInterface
         $router = new \AltoRouter();
         $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->getRouteKey($request));
 
+        $router->map('OPTIONS', '/?', function () use ($request, $response) {
+            return $this->showOptions($request, $response);
+        });
         $router->map('GET', '/?', function () use ($request, $response) {
             return $this->findAll($request, $response);
         });
-
         $router->map('GET', '/[i:id]/?', function ($id) use ($request, $response) {
             return $this->show($request, $response, $id);
         });
@@ -83,6 +85,16 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @param RequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+    public function showOptions(RequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->jsonResponse(null)->withHeader('Allow', 'HEAD,GET,PUT,DELETE,OPTIONS');
+    }
+
+    /**
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @return ResponseInterface
@@ -90,6 +102,19 @@ class SimpleModelController implements DispatcherInterface
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->jsonResponse($this->getRepository()->findAll()->toArray());
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param ResponseInterface $response
+     * @param int $id
+     * @return ResponseInterface
+     */
+    protected function show(RequestInterface $request, ResponseInterface $response, $id): ResponseInterface
+    {
+        /** @var DomainObjectInterface $model */
+        $model = $this->getRepository()->findByUid($id);
+        return $this->jsonResponse(json_encode($model->_getProperties()));
     }
 
     /**
@@ -131,19 +156,6 @@ class SimpleModelController implements DispatcherInterface
             $this->repository = $repository;
         }
         return $this->repository;
-    }
-
-    /**
-     * @param RequestInterface $request
-     * @param ResponseInterface $response
-     * @param int $id
-     * @return ResponseInterface
-     */
-    protected function show(RequestInterface $request, ResponseInterface $response, $id): ResponseInterface
-    {
-        /** @var DomainObjectInterface $model */
-        $model = $this->getRepository()->findByUid($id);
-        return $this->jsonResponse(json_encode($model->_getProperties()));
     }
 
 }
