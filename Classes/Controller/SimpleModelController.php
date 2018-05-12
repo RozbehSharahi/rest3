@@ -9,6 +9,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
+use RozbehSharahi\Rest3\Exception;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
@@ -114,6 +115,9 @@ class SimpleModelController implements DispatcherInterface
     {
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
+
+        $this->assert(!empty($model), 'Not found');
+
         return $this->jsonResponse(json_encode($model->_getProperties()));
     }
 
@@ -156,6 +160,18 @@ class SimpleModelController implements DispatcherInterface
             $this->repository = $repository;
         }
         return $this->repository;
+    }
+
+    /**
+     * @param bool $assertion
+     * @param mixed $message
+     * @throws Exception
+     */
+    protected function assert(bool $assertion, $message)
+    {
+        if (!$assertion) {
+            throw new Exception(json_encode($message));
+        }
     }
 
 }

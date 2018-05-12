@@ -3,6 +3,7 @@
 namespace RozbehSharahi\Rest3;
 
 use Doctrine\Common\Util\Inflector;
+use GuzzleHttp\Psr7\Response;
 use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -55,17 +56,26 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             return $response->withBody(stream_for('Welcome to Rest3'));
         }
 
-        if(!$this->routeManager->hasRouteConfiguration($this->getRouteKey($request))) {
+        if (!$this->routeManager->hasRouteConfiguration($this->getRouteKey($request))) {
             return $response->withBody(stream_for('This route does not exist'))->withStatus('404');
         }
 
         $configuration = $this->routeManager->getRouteConfiguration($this->getRouteKey($request));
 
-        return $this->requestStrategyManager->run(
-            $configuration['strategy'],
-            $configuration,
-            [$request, $response]
-        );
+        // We render the response or an rest exception
+        try {
+            return $this->requestStrategyManager->run(
+                $configuration['strategy'],
+                $configuration,
+                [$request, $response]
+            );
+        } catch (Exception $restException) {
+            return new Response(
+                '404',
+                ['Content-Type' => 'application/json'],
+                stream_for($restException->getMessage())
+            );
+        }
     }
 
     /**

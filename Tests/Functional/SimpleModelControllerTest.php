@@ -75,6 +75,23 @@ class SimpleModelControllerTest extends FunctionalTestBase
     /**
      * @test
      */
+    public function canSeeErrorOnNonExistingModel()
+    {
+        $this->setUpTestWebsite();
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            new ServerRequest('GET', new Uri('/rest3/seminar/1/')),
+            new Response()
+        );
+        self::assertEquals(404, $response->getStatusCode());
+        self::assertEquals('"Not found"', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
     public function canShowOptions()
     {
         $this->setUpTestWebsite();
@@ -87,7 +104,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
         );
         self::assertEquals(200, $response->getStatusCode());
         self::assertEquals('HEAD,GET,PUT,DELETE,OPTIONS', $response->getHeader('Allow')[0]);
-        self::assertEquals('null',$response->getBody()->__toString());
+        self::assertEquals('null', $response->getBody()->__toString());
     }
 
 }
