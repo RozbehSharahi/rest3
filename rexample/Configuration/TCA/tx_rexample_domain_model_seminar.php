@@ -22,6 +22,9 @@ return [
             'fe_group' => 'fe_group',
         ],
     ],
+    'types' => array (
+        '0' => array('showitem' => 'title')
+    ),
     'columns' => [
         'sys_language_uid' => [
             'exclude' => true,
