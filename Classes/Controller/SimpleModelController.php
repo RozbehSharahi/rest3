@@ -88,6 +88,9 @@ class SimpleModelController implements DispatcherInterface
         $router->map('GET', '/[i:id]/?', function ($id) use ($request, $response) {
             return $this->show($request, $response, $id);
         });
+        $router->map('GET', '/[i:id]/[a:attributeName]/?', function ($id, $attributeName) use ($request, $response) {
+            return $this->showAttribute($request, $response, $id, $attributeName);
+        });
 
         // In case we have a match
         $match = $router->match($request->getUri()->getPath(), $request->getMethod());
@@ -143,6 +146,32 @@ class SimpleModelController implements DispatcherInterface
         return $this->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
+                $this->getIncludeByRequest($request)
+            )
+        );
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param int $id
+     * @param string $attributeName
+     * @return ResponseInterface
+     */
+    protected function showAttribute(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $id,
+        string $attributeName
+    ): ResponseInterface {
+        /** @var DomainObjectInterface $model */
+        $model = $this->getRepository()->findByUid($id);
+
+        $this->assert(!empty($model), 'Not found');
+
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize(
+                $model->_getProperties()[$attributeName],
                 $this->getIncludeByRequest($request)
             )
         );
