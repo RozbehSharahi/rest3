@@ -10,9 +10,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
 use RozbehSharahi\Rest3\Exception;
+use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
 class SimpleModelController implements DispatcherInterface
@@ -46,6 +48,19 @@ class SimpleModelController implements DispatcherInterface
     public function injectObjectManager(ObjectManager $objectManager)
     {
         $this->objectManager = $objectManager;
+    }
+
+    /**
+     * @var RestNormalizer
+     */
+    protected $restNormalizer;
+
+    /**
+     * @param RestNormalizer $restNormalizer
+     */
+    public function injectRestNormalizer(RestNormalizer $restNormalizer)
+    {
+        $this->restNormalizer = $restNormalizer;
     }
 
     /**
@@ -102,7 +117,9 @@ class SimpleModelController implements DispatcherInterface
      */
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->jsonResponse($this->getRepository()->findAll()->toArray());
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize($this->getRepository()->findAll()->toArray())
+        );
     }
 
     /**
@@ -118,7 +135,7 @@ class SimpleModelController implements DispatcherInterface
 
         $this->assert(!empty($model), 'Not found');
 
-        return $this->jsonResponse(json_encode($model->_getProperties()));
+        return $this->jsonResponse($this->restNormalizer->normalize($model));
     }
 
     /**
@@ -156,8 +173,11 @@ class SimpleModelController implements DispatcherInterface
     {
         if (is_null($this->repository)) {
             /** @var RepositoryInterface $repository */
-            $repository = $this->objectManager->get($this->repositoryName);
+            $repository = clone $this->objectManager->get($this->repositoryName);
             $this->repository = $repository;
+            $this->repository->setDefaultQuerySettings((new Typo3QuerySettings())
+                ->setRespectStoragePage(false)
+            );
         }
         return $this->repository;
     }

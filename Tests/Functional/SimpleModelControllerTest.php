@@ -33,10 +33,10 @@ class SimpleModelControllerTest extends FunctionalTestBase
         $this->setUpTestWebsite();
         $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
             [
-                'title' => 'First Seminar',
+                'title' => 'First seminar',
             ],
             [
-                'title' => 'Second Seminar',
+                'title' => 'Second seminar',
             ]
         ]);
 
@@ -46,8 +46,11 @@ class SimpleModelControllerTest extends FunctionalTestBase
             new ServerRequest('GET', new Uri('/rest3/seminar')),
             new Response()
         );
+        $result = json_decode($response->getBody(),true);
         self::assertEquals(200, $response->getStatusCode());
-        self::assertCount(2, json_decode($response->getBody()));
+        self::assertCount(2, $result['data']);
+        self::assertEquals('First seminar',$result['data'][0]['attributes']['title']);
+        self::assertEquals('Second seminar',$result['data'][1]['attributes']['title']);
     }
 
     /**
@@ -68,8 +71,10 @@ class SimpleModelControllerTest extends FunctionalTestBase
             new ServerRequest('GET', new Uri('/rest3/seminar/1/')),
             new Response()
         );
+        $result = json_decode($response->getBody(), true);
         self::assertEquals(200, $response->getStatusCode());
-        self::assertNotEmpty($response->getBody()->__toString());
+        self::assertNotEmpty($result);
+        self::assertEquals('A Seminar', $result['data']['attributes']['title']);
     }
 
     /**
