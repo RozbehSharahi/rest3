@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\RequestStrategy\RequestStrategyManagerInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
+use RozbehSharahi\Rest3\Service\RequestService;
 
 class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\DispatcherInterface
 {
@@ -44,6 +45,19 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
     }
 
     /**
+     * @var RequestService
+     */
+    protected $requestService;
+
+    /**
+     * @param RequestService $requestService
+     */
+    public function injectRequestService(RequestService $requestService)
+    {
+        $this->requestService = $requestService;
+    }
+
+    /**
      * Main method to dispatch a request and its response to a callable object
      *
      * @param ServerRequestInterface $request
@@ -56,11 +70,11 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             return $response->withBody(stream_for('Welcome to Rest3'));
         }
 
-        if (!$this->routeManager->hasRouteConfiguration($this->getRouteKey($request))) {
+        if (!$this->routeManager->hasRouteConfiguration($this->requestService->getRouteKey($request))) {
             return $response->withBody(stream_for('This route does not exist'))->withStatus('404');
         }
 
-        $configuration = $this->routeManager->getRouteConfiguration($this->getRouteKey($request));
+        $configuration = $this->routeManager->getRouteConfiguration($this->requestService->getRouteKey($request));
 
         // We render the response or an rest exception
         try {
@@ -85,20 +99,6 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
     protected function isRestRootCall(ServerRequestInterface $request): bool
     {
         return trim($request->getUri()->getPath(), '/') === trim($this->entryPoint, '/');
-    }
-
-    /**
-     * Gets the current route key
-     *
-     * Example '/rest3/seminar/1` => `seminar`
-     *
-     * @param ServerRequestInterface $request
-     * @return mixed
-     */
-    protected function getRouteKey(ServerRequestInterface $request)
-    {
-        $routeKey = explode('/', trim($request->getUri()->getPath(), '/'))[1];
-        return Inflector::singularize($routeKey);
     }
 
     /**

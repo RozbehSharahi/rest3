@@ -11,9 +11,12 @@ use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
+use RozbehSharahi\Rest3\Service\RequestService;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
+use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -64,6 +67,32 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @var RequestService
+     */
+    protected $requestService;
+
+    /**
+     * @param RequestService $requestService
+     */
+    public function injectRequestService(RequestService $requestService)
+    {
+        $this->requestService = $requestService;
+    }
+    
+    /**
+     * @var PersistenceManager
+     */
+    protected $persistenceManager;
+    
+    /**
+     * @param PersistenceManager $persistenceManager
+     */
+    public function injectPersistenceManager(PersistenceManager $persistenceManager) 
+    {
+        $this->persistenceManager = $persistenceManager;
+    }
+
+    /**
      * Main method to dispatch a request and its response to a callable object
      *
      * @param ServerRequestInterface $request
@@ -77,7 +106,7 @@ class SimpleModelController implements DispatcherInterface
         string $routeKey = ''
     ): ResponseInterface {
         $router = new \AltoRouter();
-        $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->getRouteKey($request));
+        $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->requestService->getRouteKey($request));
 
         $router->map('OPTIONS', '/?', function () use ($request, $response) {
             return $this->showOptions($request, $response);
@@ -90,6 +119,9 @@ class SimpleModelController implements DispatcherInterface
         });
         $router->map('GET', '/[i:id]/[a:attributeName]/?', function ($id, $attributeName) use ($request, $response) {
             return $this->showAttribute($request, $response, $id, $attributeName);
+        });
+        $router->map('PATCH', '/[i:id]/?', function ($id) use ($request, $response) {
+            return $this->update($request, $response, $id);
         });
 
         // In case we have a match
@@ -174,6 +206,41 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param int $id
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    protected function update(ServerRequestInterface $request, ResponseInterface $response, $id): ResponseInterface
+    {
+        /** @var AbstractDomainObject $model */
+        $model = $this->getRepository()->findByUid($id);
+        $requestData = $this->requestService->getData($request);
+
+        $this->assert(!empty($model), "Not found ($id)");
+        $this->assertUpdateRequest($requestData);
+
+        // Update
+        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
+            if (!$model->_hasProperty($attributeName)) {
+                throw new Exception("Property `$attributeName` does not exist on " . get_class($model));
+            }
+            $model->_setProperty($attributeName, $attributeValue);
+        }
+
+        $this->getRepository()->update($model);
+        $this->persistenceManager->persistAll();
+
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize(
+                $model,
+                $this->getIncludeByRequest($request)
+            )
+        );
+    }
+
+    /**
      * @param mixed $data
      * @param int $statusCode
      * @return ResponseInterface
@@ -213,17 +280,17 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
-     * Gets the current route key
-     *
-     * Example '/rest3/seminar/1` => `seminar`
-     *
-     * @param ServerRequestInterface $request
-     * @return string
+     * @param array $requestData
      */
-    protected function getRouteKey(ServerRequestInterface $request): string
+    protected function assertUpdateRequest(array $requestData): void
     {
-        $routeKey = explode('/', trim($request->getUri()->getPath(), '/'))[1];
-        return Inflector::singularize($routeKey);
+        $this->assert(
+            !(
+                empty($requestData['data']['attributes']) &&
+                empty($requestData['data']['relationships'])
+            ),
+            'Empty update request, you have to set attributes or relations'
+        );
     }
 
     /**
