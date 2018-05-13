@@ -30,6 +30,7 @@ CREATE TABLE tx_rexample_domain_model_seminar (
   original_item_id int(11) DEFAULT '0' NOT NULL,
   id varchar(255) DEFAULT '' NOT NULL,
   title varchar(255) DEFAULT '' NOT NULL,
+  events int(11) DEFAULT '0' NOT NULL,
 
   PRIMARY KEY (uid),
   KEY parent (pid),

@@ -97,6 +97,8 @@ class SimpleModelController implements DispatcherInterface
                 array_merge($match['params'], [$request, $response])
             );
         }
+
+        // No match
         return $this->jsonResponse('404', 404);
     }
 
@@ -118,24 +120,32 @@ class SimpleModelController implements DispatcherInterface
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->jsonResponse(
-            $this->restNormalizer->normalize($this->getRepository()->findAll()->toArray())
+            $this->restNormalizer->normalize(
+                $this->getRepository()->findAll()->toArray(),
+                $this->getIncludeByRequest($request)
+            )
         );
     }
 
     /**
-     * @param RequestInterface $request
+     * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @param int $id
      * @return ResponseInterface
      */
-    protected function show(RequestInterface $request, ResponseInterface $response, $id): ResponseInterface
+    protected function show(ServerRequestInterface $request, ResponseInterface $response, $id): ResponseInterface
     {
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
 
         $this->assert(!empty($model), 'Not found');
 
-        return $this->jsonResponse($this->restNormalizer->normalize($model));
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize(
+                $model,
+                $this->getIncludeByRequest($request)
+            )
+        );
     }
 
     /**
@@ -153,20 +163,6 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
-     * Gets the current route key
-     *
-     * Example '/rest3/seminar/1` => `seminar`
-     *
-     * @param ServerRequestInterface $request
-     * @return string
-     */
-    protected function getRouteKey(ServerRequestInterface $request): string
-    {
-        $routeKey = explode('/', trim($request->getUri()->getPath(), '/'))[1];
-        return Inflector::singularize($routeKey);
-    }
-
-    /**
      * @return RepositoryInterface
      */
     protected function getRepository(): RepositoryInterface
@@ -180,6 +176,29 @@ class SimpleModelController implements DispatcherInterface
             );
         }
         return $this->repository;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return array
+     */
+    protected function getIncludeByRequest(ServerRequestInterface $request): array
+    {
+        return $request->getQueryParams()['include'] ? explode(',', $request->getQueryParams()['include']) : [];
+    }
+
+    /**
+     * Gets the current route key
+     *
+     * Example '/rest3/seminar/1` => `seminar`
+     *
+     * @param ServerRequestInterface $request
+     * @return string
+     */
+    protected function getRouteKey(ServerRequestInterface $request): string
+    {
+        $routeKey = explode('/', trim($request->getUri()->getPath(), '/'))[1];
+        return Inflector::singularize($routeKey);
     }
 
     /**

@@ -2,13 +2,15 @@
 
 namespace RozbehSharahi\Rest3\Normalizer;
 
+use RozbehSharahi\Rest3\Exception;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\ColumnMap;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 
-class RestNormalizer {
+class RestNormalizer
+{
 
     /**
      * @var DataMapper
@@ -123,6 +125,14 @@ class RestNormalizer {
     {
         $relations = [];
         foreach ($this->getSameLevelIncludes($include) as $relationName) {
+
+            // Check for being a real relation
+            $propertyMap = $this->dataMapper->getDataMap(get_class($model))->getColumnMap($relationName);
+            if ($propertyMap->getTypeOfRelation() === 'RELATION_NONE') {
+                throw new Exception("`$relationName` is not a relation of " . get_class($model));
+            }
+
+            // Set relation
             $relations[$relationName] = $this->getRelationPointer($model, $relationName, $include);
         }
         return $relations;

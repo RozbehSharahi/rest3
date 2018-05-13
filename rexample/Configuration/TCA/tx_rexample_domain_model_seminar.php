@@ -23,7 +23,7 @@ return [
         ],
     ],
     'types' => array (
-        '0' => array('showitem' => 'title')
+        '0' => array('showitem' => 'title, events')
     ),
     'columns' => [
         'sys_language_uid' => [
@@ -88,6 +88,20 @@ return [
             'config' => [
                 'type' => 'input'
             ]
-        ]
+        ],
+        'events' => [
+            'exclude' => 1,
+            'label' => 'Events',
+            'config' => [
+                'type' => 'inline',
+                'foreign_table' => 'tx_rexample_domain_model_event',
+                'foreign_field' => 'seminar',
+                'maxitems' => 100,
+                'appearance' => [
+                    'collapseAll' => 1,
+                    'expandSingle' => 1,
+                ],
+            ],
+        ],
     ]
 ];

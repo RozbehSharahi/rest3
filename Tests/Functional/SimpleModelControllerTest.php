@@ -68,7 +68,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
         /** @var DispatcherInterface $dispatcher */
         $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
         $response = $dispatcher->dispatch(
-            new ServerRequest('GET', new Uri('/rest3/seminar/1/')),
+            (new ServerRequest('GET', new Uri('/rest3/seminar/1/'))),
             new Response()
         );
         $result = json_decode($response->getBody(), true);
@@ -92,6 +92,44 @@ class SimpleModelControllerTest extends FunctionalTestBase
         );
         self::assertEquals(404, $response->getStatusCode());
         self::assertEquals('"Not found"', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function canIncludeRelations()
+    {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'A Seminar',
+            ]
+        ]);
+        $this->setUpDatabaseData('tx_rexample_domain_model_event', [
+            [
+                'title' => 'First event',
+                'seminar' => 1
+            ],
+            [
+                'title' => 'Second event',
+                'seminar' => 1
+            ]
+        ]);
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('GET', new Uri('/rest3/seminar/1/')))
+                ->withQueryParams([
+                    'include' => 'events'
+                ]),
+            new Response()
+        );
+        $result = json_decode($response->getBody(), true);
+        self::assertEquals(200, $response->getStatusCode());
+        self::assertNotEmpty($result);
+        self::assertEquals('A Seminar', $result['data']['attributes']['title']);
+        self::assertCount(2, $result['data']['relationships']['events']['data']);
     }
 
     /**
