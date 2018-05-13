@@ -10,6 +10,11 @@ plugin.tx_rest3 {
                 className = RozbehSharahi\Rexample\Controller\SeminarController
                 methodName = dispatch
             }
+            event {
+                strategy = class-method
+                className = RozbehSharahi\Rexample\Controller\EventController
+                methodName = dispatch
+            }
             message {
                 strategy = class-method
                 className = RozbehSharahi\Rexample\MessageRoute

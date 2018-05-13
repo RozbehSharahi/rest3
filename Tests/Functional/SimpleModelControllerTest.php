@@ -135,6 +135,32 @@ class SimpleModelControllerTest extends FunctionalTestBase
     /**
      * @test
      */
+    public function canSeeNullOnEmptyHasOneRelation()
+    {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_event', [
+            [
+                'title' => 'First event',
+                'seminar' => 0
+            ]
+        ]);
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('GET', new Uri('/rest3/event/1/')))
+                ->withQueryParams([
+                    'include' => 'seminar'
+                ]),
+            new Response()
+        );
+        $result = json_decode($response->getBody(), true);
+        self::assertNotEmpty($result['data']['relationships']['seminar']);
+        self::assertNull($result['data']['relationships']['seminar']['data']);
+    }
+
+    /**
+     * @test
+     */
     public function canShowOptions()
     {
         $this->setUpTestWebsite();

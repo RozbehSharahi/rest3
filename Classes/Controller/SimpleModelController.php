@@ -140,9 +140,7 @@ class SimpleModelController implements DispatcherInterface
     {
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
-
         $this->assert(!empty($model), 'Not found');
-
         return $this->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
@@ -166,9 +164,7 @@ class SimpleModelController implements DispatcherInterface
     ): ResponseInterface {
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
-
         $this->assert(!empty($model), 'Not found');
-
         return $this->jsonResponse(
             $this->restNormalizer->normalize(
                 $model->_getProperties()[$attributeName],
