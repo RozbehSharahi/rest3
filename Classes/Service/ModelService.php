@@ -3,10 +3,7 @@
 namespace RozbehSharahi\Rest3\Service;
 
 use RozbehSharahi\Rest3\Exception;
-use RozbehSharahi\Rexample\Domain\Model\Event;
-use RozbehSharahi\Rexample\Domain\Model\Seminar;
 use TYPO3\CMS\Core\SingletonInterface;
-use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\ColumnMap;
