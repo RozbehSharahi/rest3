@@ -108,6 +108,7 @@ class SimpleModelController implements DispatcherInterface
         $router = new \AltoRouter();
         $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->requestService->getRouteKey($request));
 
+        // Routes
         $router->map('OPTIONS', '/?', function () use ($request, $response) {
             return $this->showOptions($request, $response);
         });
@@ -122,6 +123,9 @@ class SimpleModelController implements DispatcherInterface
         });
         $router->map('PATCH', '/[i:id]/?', function ($id) use ($request, $response) {
             return $this->update($request, $response, $id);
+        });
+        $router->map('POST', '/?', function () use ($request, $response) {
+            return $this->create($request, $response);
         });
 
         // In case we have a match
@@ -230,6 +234,38 @@ class SimpleModelController implements DispatcherInterface
         }
 
         $this->getRepository()->update($model);
+        $this->persistenceManager->persistAll();
+
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize(
+                $model,
+                $this->getIncludeByRequest($request)
+            )
+        );
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    protected function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        /** @var AbstractDomainObject $model */
+        $model = new $this->modelName;
+        $requestData = $this->requestService->getData($request);
+        $this->assertUpdateRequest($requestData);
+
+        // Write into model
+        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
+            if (!$model->_hasProperty($attributeName)) {
+                throw new Exception("Property `$attributeName` does not exist on " . get_class($model));
+            }
+            $model->_setProperty($attributeName, $attributeValue);
+        }
+
+        $this->getRepository()->add($model);
         $this->persistenceManager->persistAll();
 
         return $this->jsonResponse(

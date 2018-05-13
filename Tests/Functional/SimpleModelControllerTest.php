@@ -10,6 +10,7 @@ use RozbehSharahi\Rest3\DispatcherInterface;
 use RozbehSharahi\Rexample\Domain\Model\Event;
 use RozbehSharahi\Rexample\Domain\Model\Seminar;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
+use RozbehSharahi\Rexample\Domain\Repository\SeminarRepository;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -237,7 +238,44 @@ class SimpleModelControllerTest extends FunctionalTestBase
                 ]))),
             new Response()
         );
-        self::assertEquals('Property `bla-attribute` does not exist on '.Seminar::class, $response->getBody()->__toString());
+        self::assertEquals('Property `bla-attribute` does not exist on ' . Seminar::class,
+            $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function canCreate()
+    {
+        $this->setUpTestWebsite();
+
+        /** @var RepositoryInterface $repository */
+        $repository = $this->getObjectManager()->get(SeminarRepository::class);
+        self::assertCount(0, $repository->findAll()->toArray());
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('POST', new Uri('/rest3/seminar/')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'id' => 1,
+                        'type' => Seminar::class,
+                        'attributes' => [
+                            'title' => 'First seminar'
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+        $result = json_decode($response->getBody(), true);
+
+        self::assertEquals('First seminar', $result['data']['attributes']['title']);
+        self::assertCount(1, $repository->findAll());
+
+        /** @var Seminar $model */
+        $model = $repository->findByUid(1);
+        self::assertEquals('First seminar', $model->getTitle());
     }
 
     /**
