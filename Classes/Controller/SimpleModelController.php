@@ -11,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\BootstrapDispatcher;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
+use RozbehSharahi\Rest3\Service\ModelService;
 use RozbehSharahi\Rest3\Service\RequestService;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
@@ -90,6 +91,19 @@ class SimpleModelController implements DispatcherInterface
     public function injectPersistenceManager(PersistenceManager $persistenceManager)
     {
         $this->persistenceManager = $persistenceManager;
+    }
+
+    /**
+     * @var ModelService
+     */
+    protected $modelService;
+
+    /**
+     * @param ModelService $modelService
+     */
+    public function injectModelService(ModelService $modelService)
+    {
+        $this->modelService = $modelService;
     }
 
     /**
@@ -229,12 +243,7 @@ class SimpleModelController implements DispatcherInterface
         $this->assertUpdateRequest($requestData);
 
         // Update
-        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
-            if (!$model->_hasProperty($attributeName)) {
-                throw new Exception("Property `$attributeName` does not exist on " . get_class($model));
-            }
-            $model->_setProperty($attributeName, $attributeValue);
-        }
+        $this->modelService->writeIntoModelByRequestData($model, $requestData);
 
         $this->getRepository()->update($model);
         $this->persistenceManager->persistAll();
@@ -261,12 +270,7 @@ class SimpleModelController implements DispatcherInterface
         $this->assertUpdateRequest($requestData);
 
         // Write into model
-        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
-            if (!$model->_hasProperty($attributeName)) {
-                throw new Exception("Property `$attributeName` does not exist on " . get_class($model));
-            }
-            $model->_setProperty($attributeName, $attributeValue);
-        }
+        $this->modelService->writeIntoModelByRequestData($model, $requestData);
 
         $this->getRepository()->add($model);
         $this->persistenceManager->persistAll();
@@ -293,7 +297,6 @@ class SimpleModelController implements DispatcherInterface
         $this->assert(!empty($model), "Not found ($id)");
         $this->getRepository()->remove($model);
         $this->persistenceManager->persistAll();
-
         return $this->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->modelName . " with ID `$id` was deleted"

@@ -11,6 +11,7 @@ use RozbehSharahi\Rexample\Domain\Model\Event;
 use RozbehSharahi\Rexample\Domain\Model\Seminar;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
 use RozbehSharahi\Rexample\Domain\Repository\SeminarRepository;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -276,6 +277,68 @@ class SimpleModelControllerTest extends FunctionalTestBase
         /** @var Seminar $model */
         $model = $repository->findByUid(1);
         self::assertEquals('First seminar', $model->getTitle());
+    }
+
+    /**
+     * @test
+     */
+    public function canSetHasOneRelation()
+    {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'A seminar'
+            ]
+        ]);
+        /** @var RepositoryInterface $repository */
+        $repository = $this->getObjectManager()->get(EventRepository::class);
+        /** @var PersistenceManager $persistenceManager */
+        $persistenceManager = $this->getObjectManager()->get(PersistenceManager::class);
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $dispatcher->dispatch(
+            (new ServerRequest('POST', new Uri('/rest3/event/')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'type' => Event::class,
+                        'attributes' => [
+                            'title' => 'Created event'
+                        ],
+                        'relationships' => [
+                            'seminar' =>  1
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+
+        /** @var Event $event */
+        $event = $repository->findByUid(1);
+        self::assertInstanceOf(Event::class, $event);
+        self::assertEquals('Created event', $event->getTitle());
+        self::assertEquals('A seminar', $event->getSeminar()->getTitle());
+
+        $dispatcher->dispatch(
+            (new ServerRequest('PATCH', new Uri('/rest3/event/1')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'type' => Event::class,
+                        'attributes' => [
+                            'title' => 'Created event (updated)'
+                        ],
+                        'relationships' => [
+                            'seminar' =>  0
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+
+        $persistenceManager->clearState();
+        $event = $repository->findByUid(1);
+        self::assertEquals('Created event (updated)',$event->getTitle());
+        self::assertNull($event->getSeminar());
     }
 
     /**
