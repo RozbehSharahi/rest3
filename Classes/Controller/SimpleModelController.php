@@ -78,16 +78,16 @@ class SimpleModelController implements DispatcherInterface
     {
         $this->requestService = $requestService;
     }
-    
+
     /**
      * @var PersistenceManager
      */
     protected $persistenceManager;
-    
+
     /**
      * @param PersistenceManager $persistenceManager
      */
-    public function injectPersistenceManager(PersistenceManager $persistenceManager) 
+    public function injectPersistenceManager(PersistenceManager $persistenceManager)
     {
         $this->persistenceManager = $persistenceManager;
     }
@@ -126,6 +126,9 @@ class SimpleModelController implements DispatcherInterface
         });
         $router->map('POST', '/?', function () use ($request, $response) {
             return $this->create($request, $response);
+        });
+        $router->map('DELETE', '/[i:id]/?', function ($id) use ($request, $response) {
+            return $this->delete($request, $response, $id);
         });
 
         // In case we have a match
@@ -277,6 +280,28 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param int $id
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    protected function delete(ServerRequestInterface $request, ResponseInterface $response, $id): ResponseInterface
+    {
+        /** @var AbstractDomainObject $model */
+        $model = $this->getRepository()->findByUid($id);
+        $this->assert(!empty($model), "Not found ($id)");
+        $this->getRepository()->remove($model);
+        $this->persistenceManager->persistAll();
+
+        return $this->jsonResponse(
+            $this->restNormalizer->normalize(
+                $this->modelName . " with ID `$id` was deleted"
+            )
+        );
+    }
+
+    /**
      * @param mixed $data
      * @param int $statusCode
      * @return ResponseInterface
@@ -318,9 +343,10 @@ class SimpleModelController implements DispatcherInterface
     /**
      * @param array $requestData
      */
-    protected function assertUpdateRequest(array $requestData): void
+    protected function assertUpdateRequest(array $requestData = null): void
     {
         $this->assert(
+            $requestData !== null &&
             !(
                 empty($requestData['data']['attributes']) &&
                 empty($requestData['data']['relationships'])
