@@ -120,6 +120,7 @@ class RestNormalizer
      * @param DomainObjectInterface $model
      * @param array $include
      * @return array
+     * @throws Exception
      */
     protected function getRelations($model, array $include = [])
     {
