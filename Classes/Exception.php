@@ -66,10 +66,12 @@ class Exception extends \Exception
 
     /**
      * @param array $headers
+     * @return Exception
      */
     public function setHeaders(array $headers)
     {
         $this->headers = $headers;
+        return $this;
     }
 
     /**
