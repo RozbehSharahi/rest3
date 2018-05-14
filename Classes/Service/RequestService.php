@@ -52,4 +52,13 @@ class RequestService
         return (int)GeneralUtility::_GP('L');
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return array
+     */
+    public function getIncludeByRequest(ServerRequestInterface $request): array
+    {
+        return $request->getQueryParams()['include'] ? explode(',', $request->getQueryParams()['include']) : [];
+    }
+
 }

@@ -195,7 +195,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->getRepository()->findAll()->toArray(),
-                $this->getIncludeByRequest($request)
+                $this->requestService->getIncludeByRequest($request)
             )
         );
     }
@@ -214,7 +214,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->getIncludeByRequest($request)
+                $this->requestService->getIncludeByRequest($request)
             )
         );
     }
@@ -238,7 +238,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model->_getProperties()[$attributeName],
-                $this->getIncludeByRequest($request)
+                $this->requestService->getIncludeByRequest($request)
             )
         );
     }
@@ -268,7 +268,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->getIncludeByRequest($request)
+                $this->requestService->getIncludeByRequest($request)
             )
         );
     }
@@ -295,7 +295,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->getIncludeByRequest($request)
+                $this->requestService->getIncludeByRequest($request)
             )
         );
     }
@@ -337,15 +337,6 @@ class SimpleModelController implements DispatcherInterface
             );
         }
         return $this->repository;
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @return array
-     */
-    protected function getIncludeByRequest(ServerRequestInterface $request): array
-    {
-        return $request->getQueryParams()['include'] ? explode(',', $request->getQueryParams()['include']) : [];
     }
 
     /**
