@@ -2,13 +2,11 @@
 
 namespace RozbehSharahi\Rest3\Controller;
 
-use Doctrine\Common\Util\Inflector;
 use GuzzleHttp\Psr7\Response;
 use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use RozbehSharahi\Rest3\BootstrapDispatcher;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
 use RozbehSharahi\Rest3\Service\ModelService;
@@ -113,6 +111,7 @@ class SimpleModelController implements DispatcherInterface
      * @param ResponseInterface $response
      * @param string $routeKey
      * @return ResponseInterface
+     * @throws Exception
      */
     public function dispatch(
         ServerRequestInterface $request,
@@ -120,7 +119,6 @@ class SimpleModelController implements DispatcherInterface
         string $routeKey = ''
     ): ResponseInterface {
         $router = new \AltoRouter();
-        $router->setBasePath(BootstrapDispatcher::getEntryPoint() . '/' . $this->requestService->getRouteKey($request));
 
         // Routes
         $router->map('OPTIONS', '/?', function () use ($request, $response) {
@@ -146,7 +144,10 @@ class SimpleModelController implements DispatcherInterface
         });
 
         // Evaluate the route
-        $match = $router->match($request->getUri()->getPath(), $request->getMethod());
+        $match = $router->match(
+            '/' . explode('/', $request->getUri()->getPath(), 4)[3],
+            $request->getMethod()
+        );
 
         // In case we have a match
         if (!$match || !is_callable($match['target'])) {
