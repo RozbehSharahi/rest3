@@ -332,6 +332,8 @@ class SimpleModelController implements DispatcherInterface
             $this->repository = $repository;
             $this->repository->setDefaultQuerySettings((new Typo3QuerySettings())
                 ->setRespectStoragePage(false)
+                ->setLanguageMode('strict')
+                ->setLanguageUid($this->requestService->getCurrentLanguageUid())
             );
         }
         return $this->repository;

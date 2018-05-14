@@ -4,6 +4,7 @@ namespace RozbehSharahi\Rest3;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RozbehSharahi\Rest3\Service\RequestService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
@@ -59,6 +60,16 @@ class BootstrapDispatcher
     }
 
     /**
+     * @return RequestService
+     */
+    protected static function getRequestService(): RequestService
+    {
+        /** @var RequestService $requestService */
+        $requestService = self::getObjectManager()->get(RequestService::class);
+        return $requestService;
+    }
+
+    /**
      * Initialize the typo3
      *
      * @param int $pageUid
@@ -77,7 +88,7 @@ class BootstrapDispatcher
      */
     private static function getFrontendController($pageUid): TypoScriptFrontendController
     {
-        if($GLOBALS['TSFE']) {
+        if ($GLOBALS['TSFE']) {
             return $GLOBALS['TSFE'];
         }
 
@@ -89,15 +100,25 @@ class BootstrapDispatcher
             1,
             'rest3-cache-hash'
         );
+
         EidUtility::initFeUser();
         EidUtility::initTCA();
+
         $GLOBALS['TSFE']->sys_page = GeneralUtility::makeInstance(PageRepository::class);
-        $GLOBALS['TSFE']->sys_page->init(TRUE);
+        $GLOBALS['TSFE']->sys_page->init(true);
         $GLOBALS['TSFE']->connectToDB();
         $GLOBALS['TSFE']->initFEuser();
         $GLOBALS['TSFE']->initTemplate();
         $GLOBALS['TSFE']->determineId();
         $GLOBALS['TSFE']->getConfigArray();
+
+        // Language
+        $sysLanguageUid = self::getRequestService()->getCurrentLanguageUid();
+        $GLOBALS['TSFE']->sys_language_uid = $sysLanguageUid;
+        $GLOBALS['TSFE']->sys_language_content = $sysLanguageUid;
+        $GLOBALS['TSFE']->config['config']['sys_language_uid'] = $sysLanguageUid;
+        $GLOBALS['TSFE']->settingLanguage();
+        $GLOBALS['TSFE']->settingLocale();
 
         /** @var TypoScriptFrontendController $frontendController */
         $frontendController = $GLOBALS['TSFE'];

@@ -23,7 +23,7 @@ return [
         ],
     ],
     'types' => array (
-        '0' => array('showitem' => 'title, events')
+        '0' => array('showitem' => 'title, events, sys_language_uid, l10n_parent, l10n_diffsource')
     ),
     'columns' => [
         'sys_language_uid' => [
