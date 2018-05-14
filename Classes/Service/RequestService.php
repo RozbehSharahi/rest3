@@ -13,9 +13,21 @@ class RequestService
      * @param ServerRequestInterface $request
      * @return array
      */
-    public function getData(ServerRequestInterface $request)
+    public function getData(ServerRequestInterface $request): array
     {
-        return json_decode($request->getBody(), true);
+        return json_decode($request->getBody(), true) ?: [];
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return array
+     */
+    public function getParameters(ServerRequestInterface $request): array
+    {
+        return array_replace_recursive(
+            $request->getQueryParams(),
+            $this->getData($request)
+        );
     }
 
     /**

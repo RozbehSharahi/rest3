@@ -11,6 +11,7 @@ use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
 use RozbehSharahi\Rest3\Service\ModelService;
 use RozbehSharahi\Rest3\Service\RequestService;
+use RozbehSharahi\Rest3\Service\ResponseService;
 use TYPO3\CMS\Core\Http\DispatcherInterface;
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
@@ -105,6 +106,19 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @var ResponseService
+     */
+    protected $responseService;
+
+    /**
+     * @param ResponseService $responseService
+     */
+    public function injectResponseService(ResponseService $responseService)
+    {
+        $this->responseService = $responseService;
+    }
+
+    /**
      * Main method to dispatch a request and its response to a callable object
      *
      * @param ServerRequestInterface $request
@@ -168,7 +182,7 @@ class SimpleModelController implements DispatcherInterface
      */
     public function showOptions(RequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->jsonResponse(null)->withHeader('Allow', 'HEAD,GET,PUT,DELETE,OPTIONS');
+        return $this->responseService->jsonResponse(null)->withHeader('Allow', 'HEAD,GET,PUT,DELETE,OPTIONS');
     }
 
     /**
@@ -178,7 +192,7 @@ class SimpleModelController implements DispatcherInterface
      */
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->getRepository()->findAll()->toArray(),
                 $this->getIncludeByRequest($request)
@@ -197,7 +211,7 @@ class SimpleModelController implements DispatcherInterface
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
         $this->assert(!empty($model), 'Not found');
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
                 $this->getIncludeByRequest($request)
@@ -221,7 +235,7 @@ class SimpleModelController implements DispatcherInterface
         /** @var DomainObjectInterface $model */
         $model = $this->getRepository()->findByUid($id);
         $this->assert(!empty($model), 'Not found');
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model->_getProperties()[$attributeName],
                 $this->getIncludeByRequest($request)
@@ -251,7 +265,7 @@ class SimpleModelController implements DispatcherInterface
         $this->getRepository()->update($model);
         $this->persistenceManager->persistAll();
 
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
                 $this->getIncludeByRequest($request)
@@ -278,7 +292,7 @@ class SimpleModelController implements DispatcherInterface
         $this->getRepository()->add($model);
         $this->persistenceManager->persistAll();
 
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
                 $this->getIncludeByRequest($request)
@@ -300,24 +314,10 @@ class SimpleModelController implements DispatcherInterface
         $this->assert(!empty($model), "Not found ($id)");
         $this->getRepository()->remove($model);
         $this->persistenceManager->persistAll();
-        return $this->jsonResponse(
+        return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->modelName . " with ID `$id` was deleted"
             )
-        );
-    }
-
-    /**
-     * @param mixed $data
-     * @param int $statusCode
-     * @return ResponseInterface
-     */
-    protected function jsonResponse($data, $statusCode = 200): ResponseInterface
-    {
-        return new Response(
-            $statusCode,
-            ['Content-Type' => 'application/json'],
-            stream_for(json_encode($data))
         );
     }
 
