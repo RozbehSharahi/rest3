@@ -130,7 +130,7 @@ class RestNormalizer
             // Check for being a real relation
             $propertyMap = $this->dataMapper->getDataMap(get_class($model))->getColumnMap($relationName);
             if (is_null($propertyMap) || $propertyMap->getTypeOfRelation() === 'RELATION_NONE') {
-                throw new Exception("`$relationName` is not a relation of " . get_class($model));
+                throw Exception::create()->addError("`$relationName` is not a relation of " . get_class($model));
             }
 
             // Set relation

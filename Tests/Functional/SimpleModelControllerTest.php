@@ -30,7 +30,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
             new Response()
         );
 
-        self::assertEquals(404, $response->getStatusCode());
+        self::assertEquals(400, $response->getStatusCode());
     }
 
     /**
@@ -98,8 +98,10 @@ class SimpleModelControllerTest extends FunctionalTestBase
             new ServerRequest('GET', new Uri('/rest3/seminar/1/')),
             new Response()
         );
-        self::assertEquals(404, $response->getStatusCode());
-        self::assertEquals('"Not found"', $response->getBody()->__toString());
+        $result = json_decode($response->getBody(), true);
+        self::assertEquals(400, $response->getStatusCode());
+        self::assertEquals('Not found', $result['errors']['0']['detail']);
+        self::assertEquals('400', $result['errors']['0']['status']);
     }
 
     /**
@@ -239,8 +241,10 @@ class SimpleModelControllerTest extends FunctionalTestBase
                 ]))),
             new Response()
         );
-        self::assertEquals('Property `bla-attribute` does not exist on ' . Seminar::class,
-            $response->getBody()->__toString());
+        self::assertContains(
+            'Property `bla-attribute` does not exist',
+            $response->getBody()->__toString()
+        );
     }
 
     /**
@@ -306,7 +310,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event'
                         ],
                         'relationships' => [
-                            'seminar' =>  1
+                            'seminar' => 1
                         ]
                     ]
                 ]))),
@@ -328,7 +332,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event (updated)'
                         ],
                         'relationships' => [
-                            'seminar' =>  0
+                            'seminar' => 0
                         ]
                     ]
                 ]))),
@@ -337,7 +341,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
 
         $persistenceManager->clearState();
         $event = $repository->findByUid(1);
-        self::assertEquals('Created event (updated)',$event->getTitle());
+        self::assertEquals('Created event (updated)', $event->getTitle());
         self::assertNull($event->getSeminar());
     }
 

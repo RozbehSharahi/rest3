@@ -145,17 +145,19 @@ class SimpleModelController implements DispatcherInterface
             return $this->delete($request, $response, $id);
         });
 
-        // In case we have a match
+        // Evaluate the route
         $match = $router->match($request->getUri()->getPath(), $request->getMethod());
-        if ($match && is_callable($match['target'])) {
-            return call_user_func_array(
-                $match['target'],
-                array_merge($match['params'], [$request, $response])
-            );
+
+        // In case we have a match
+        if (!$match || !is_callable($match['target'])) {
+            throw Exception::create()->addError('Route could not be interpreted');
         }
 
         // No match
-        return $this->jsonResponse('404', 404);
+        return call_user_func_array(
+            $match['target'],
+            array_merge($match['params'], [$request, $response])
+        );
     }
 
     /**
@@ -366,7 +368,7 @@ class SimpleModelController implements DispatcherInterface
     protected function assert(bool $assertion, $message)
     {
         if (!$assertion) {
-            throw new Exception(json_encode($message));
+            throw Exception::create()->addError($message);
         }
     }
 

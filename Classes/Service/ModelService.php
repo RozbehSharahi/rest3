@@ -70,7 +70,8 @@ class ModelService implements SingletonInterface
         // Write attributes
         foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
             if (!ObjectAccess::isPropertySettable($model, $attributeName)) {
-                throw new Exception("Property `$attributeName` does not exist on " . get_class($model));
+                throw Exception::create()
+                    ->addError("Property `$attributeName` does not exist on " . get_class($model));
             }
             ObjectAccess::setProperty($model, $attributeName, $attributeValue);
         }
@@ -78,10 +79,12 @@ class ModelService implements SingletonInterface
         // Write relations
         foreach ($requestData['data']['relationships'] ?: [] as $attributeName => $attributeValue) {
             if (!ObjectAccess::isPropertySettable($model, $attributeName)) {
-                throw new Exception("Relation `$attributeName` can not be set on " . get_class($model));
+                throw Exception::create()
+                    ->addError("Relation `$attributeName` can not be set on " . get_class($model));
             }
             if ($dataMap->getColumnMap($attributeName)->getTypeOfRelation() !== ColumnMap::RELATION_HAS_ONE) {
-                throw new Exception('Currently it is only possible to set has one relation ships');
+                throw Exception::create()
+                    ->addError('Currently it is only possible to set has one relation ships');
             }
             $targetType = $this->dataMapper->getType(get_class($model), $attributeName);
             $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);

@@ -71,7 +71,12 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
         }
 
         if (!$this->routeManager->hasRouteConfiguration($this->requestService->getRouteKey($request))) {
-            return $response->withBody(stream_for('This route does not exist'))->withStatus('404');
+            $restException = Exception::create()->addError('This route does not exists', 404);
+            return new Response(
+                $restException->getStatusCode(),
+                $restException->getHeaders(),
+                $restException->getErrorJson()
+            );
         }
 
         $configuration = $this->routeManager->getRouteConfiguration($this->requestService->getRouteKey($request));
@@ -85,9 +90,9 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             );
         } catch (Exception $restException) {
             return new Response(
-                '404',
-                ['Content-Type' => 'application/json'],
-                stream_for($restException->getMessage())
+                $restException->getStatusCode(),
+                $restException->getHeaders(),
+                stream_for($restException->getErrorJson())
             );
         }
     }
