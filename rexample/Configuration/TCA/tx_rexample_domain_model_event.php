@@ -108,19 +108,19 @@ return [
                 'default' => 0,
             ]
         ],
-        'locations' => [
+        'locations' => array(
             'exclude' => 1,
-            'label' => 'Locations',
-            'config' => [
-                'type' => 'inline',
+            'label' => 'Events',
+            'config' => array(
+                'type' => 'select',
+                'multiple' => 1,
                 'foreign_table' => 'tx_rexample_domain_model_location',
-                'foreign_field' => 'event',
-                'maxitems' => 100,
-                'appearance' => [
-                    'collapseAll' => 1,
-                    'expandSingle' => 1,
-                ],
-            ],
-        ],
+                'MM' => 'tx_rexample_location_event_mm',
+                'MM_opposite_field' => 'locations',
+                'foreign_table_where' => ' AND tx_rexample_domain_model_location.pid=###CURRENT_PID### ORDER BY tx_rexample_domain_model_location.title ',
+                'minitems' => 0,
+                'maxitems' => 99,
+            ),
+        ),
     ]
 ];

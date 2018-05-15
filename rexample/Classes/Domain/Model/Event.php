@@ -23,6 +23,11 @@ class Event extends AbstractEntity
      */
     protected $locations;
 
+    public function __construct()
+    {
+        $this->locations = new ObjectStorage();
+    }
+
     /**
      * @return string
      */

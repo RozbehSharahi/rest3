@@ -23,7 +23,7 @@ return [
         ],
     ],
     'types' => array(
-        '0' => array('showitem' => 'title, event, sys_language_uid, l10n_parent, l10n_diffsource')
+        '0' => array('showitem' => 'title, events, sys_language_uid, l10n_parent, l10n_diffsource')
     ),
     'columns' => [
         'sys_language_uid' => [
@@ -89,24 +89,18 @@ return [
                 'type' => 'input'
             ]
         ],
-        'event' => [
-            'exclude' => true,
-            'label' => 'Event',
-            'config' => [
+        'events' => array(
+            'exclude' => 1,
+            'label' => 'Events',
+            'config' => array(
                 'type' => 'select',
-                'renderType' => 'selectSingle',
-                'items' => [
-                    ['', 0],
-                ],
+                'multiple' => 1,
                 'foreign_table' => 'tx_rexample_domain_model_event',
-                'foreign_table_where' => 'AND tx_rexample_domain_model_event.pid=###CURRENT_PID### AND tx_rexample_domain_model_event.sys_language_uid IN (-1,0)',
-                'fieldWizard' => [
-                    'selectIcons' => [
-                        'disabled' => true,
-                    ],
-                ],
-                'default' => 0,
-            ]
-        ]
+                'MM' => 'tx_rexample_location_event_mm',
+                'foreign_table_where' => ' AND tx_rexample_domain_model_event.pid=###CURRENT_PID### ORDER BY tx_rexample_domain_model_event.title ',
+                'minitems' => 0,
+                'maxitems' => 99,
+            ),
+        ),
     ]
 ];

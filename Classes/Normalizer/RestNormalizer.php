@@ -152,10 +152,6 @@ class RestNormalizer
         $propertyValue = $modelProperties[$relationName];
         $propertyMap = $this->dataMapper->getDataMap(get_class($model))->getColumnMap($relationName);
 
-        if ($propertyMap === null) {
-            throw new \Exception($relationName . ' does not exist on ' . get_class($model));
-        }
-
         // Has one but no assignment
         if ($propertyMap->getTypeOfRelation() === ColumnMap::RELATION_HAS_ONE &&
             is_null($propertyValue)) {
@@ -181,8 +177,11 @@ class RestNormalizer
         }
 
         // Has many relations
-        if ($propertyMap->getTypeOfRelation() === ColumnMap::RELATION_HAS_MANY &&
-            $propertyValue instanceof ObjectStorage) {
+        $hasManyRelation = in_array($propertyMap->getTypeOfRelation(), [
+            ColumnMap::RELATION_HAS_AND_BELONGS_TO_MANY,
+            ColumnMap::RELATION_HAS_MANY
+        ]);
+        if ($hasManyRelation && $propertyValue instanceof ObjectStorage) {
             return [
                 'data' => array_map(function (DomainObjectInterface $relationModel) use ($include, $relationName) {
                     $this->addModelToIncludeStore(
@@ -197,7 +196,7 @@ class RestNormalizer
             ];
         }
 
-        return ['data' => null];
+        throw Exception::create()->addError('Could not normalize relation ' . get_class($model) . '::' . $relationName);
     }
 
     /**

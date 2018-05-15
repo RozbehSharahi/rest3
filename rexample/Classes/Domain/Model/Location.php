@@ -3,6 +3,7 @@
 namespace RozbehSharahi\Rexample\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class Location extends AbstractEntity
 {
@@ -13,9 +14,14 @@ class Location extends AbstractEntity
     protected $title;
 
     /**
-     * @var \RozbehSharahi\Rexample\Domain\Model\Event
+     * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\RozbehSharahi\Rexample\Domain\Model\Event>
      */
-    protected $event;
+    protected $events;
+
+    public function __construct()
+    {
+        $this->events = new ObjectStorage();
+    }
 
     /**
      * @return string
@@ -36,20 +42,20 @@ class Location extends AbstractEntity
     }
 
     /**
-     * @return Event
+     * @return ObjectStorage
      */
-    public function getEvent()
+    public function getEvents()
     {
-        return $this->event;
+        return $this->events;
     }
 
     /**
-     * @param Event $event
+     * @param ObjectStorage $events
      * @return Location
      */
-    public function setEvent(Event $event = null)
+    public function setEvent(ObjectStorage $events)
     {
-        $this->event = $event;
+        $this->events = $events;
         return $this;
     }
 
