@@ -8,6 +8,7 @@ use function GuzzleHttp\Psr7\stream_for;
 use GuzzleHttp\Psr7\Uri;
 use RozbehSharahi\Rest3\DispatcherInterface;
 use RozbehSharahi\Rexample\Domain\Model\Event;
+use RozbehSharahi\Rexample\Domain\Model\Location;
 use RozbehSharahi\Rexample\Domain\Model\Seminar;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
 use RozbehSharahi\Rexample\Domain\Repository\SeminarRepository;
@@ -118,11 +119,31 @@ class SimpleModelControllerTest extends FunctionalTestBase
         $this->setUpDatabaseData('tx_rexample_domain_model_event', [
             [
                 'title' => 'First event',
-                'seminar' => 1
+                'seminar' => 1,
             ],
             [
                 'title' => 'Second event',
                 'seminar' => 1
+            ]
+        ]);
+        $this->setUpDatabaseData('tx_rexample_domain_model_location', [
+            [
+                'uid' => 1,
+                'title' => 'A Location'
+            ],
+            [
+                'uid' => 2,
+                'title' => 'A second Location'
+            ]
+        ]);
+        $this->setUpDatabaseData('tx_rexample_location_event_mm', [
+            [
+                'uid_local' => 1,
+                'uid_foreign' => 1,
+            ],
+            [
+                'uid_local' => 2,
+                'uid_foreign' => 1,
             ]
         ]);
 
@@ -131,7 +152,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
         $response = $dispatcher->dispatch(
             (new ServerRequest('GET', new Uri('/rest3/seminar/1/')))
                 ->withQueryParams([
-                    'include' => 'events'
+                    'include' => 'events,events.locations'
                 ]),
             new Response()
         );
@@ -140,6 +161,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
         self::assertNotEmpty($result);
         self::assertEquals('A Seminar', $result['data']['attributes']['title']);
         self::assertCount(2, $result['data']['relationships']['events']['data']);
+        self::assertCount(2, array_filter($result['included'],function($item) {
+            return $item['type'] === Location::class;
+        }));
     }
 
     /**
