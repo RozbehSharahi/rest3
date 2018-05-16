@@ -8,6 +8,7 @@ use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\ColumnMap;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 use TYPO3\CMS\Extbase\Property\PropertyMapper;
 use TYPO3\CMS\Extbase\Property\PropertyMappingConfiguration;
 use TYPO3\CMS\Extbase\Property\PropertyMappingConfigurationBuilder;
@@ -78,17 +79,37 @@ class ModelService implements SingletonInterface
 
         // Write relations
         foreach ($requestData['data']['relationships'] ?: [] as $attributeName => $attributeValue) {
+            $relationType = $dataMap->getColumnMap($attributeName)->getTypeOfRelation();
+
+            if (is_null($relationType)) {
+                throw Exception::create()->addError($attributeName . ' is not of type relation');
+            }
+
             if (!ObjectAccess::isPropertySettable($model, $attributeName)) {
                 throw Exception::create()
-                    ->addError("Relation `$attributeName` can not be set on " . get_class($model));
+                    ->addError("Relation `$attributeName` can not be set throw setter on " . get_class($model));
             }
-            if ($dataMap->getColumnMap($attributeName)->getTypeOfRelation() !== ColumnMap::RELATION_HAS_ONE) {
+
+            // 1:n
+            if ($relationType === ColumnMap::RELATION_HAS_MANY) {
                 throw Exception::create()
-                    ->addError('Currently it is only possible to set has one relation ships');
+                    ->addError('1:n relation can not be set. Please set by foreign table');
             }
-            $targetType = $this->dataMapper->getType(get_class($model), $attributeName);
-            $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);
-            ObjectAccess::setProperty($model, $attributeName, $value);
+
+            // n:1
+            if ($relationType === ColumnMap::RELATION_HAS_ONE) {
+                $targetType = $this->dataMapper->getType(get_class($model), $attributeName);
+                $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);
+                ObjectAccess::setProperty($model, $attributeName, $value);
+            }
+
+            // m:n
+            if ($relationType === ColumnMap::RELATION_HAS_AND_BELONGS_TO_MANY) {
+                $itemType = $this->dataMapper->getType(get_class($model), $attributeName);
+                $targetType = ObjectStorage::class . '<' . $itemType . '>';
+                $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);
+                ObjectAccess::setProperty($model, $attributeName, $value);
+            }
         }
 
         return $model;

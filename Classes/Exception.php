@@ -7,6 +7,21 @@ use Throwable;
 class Exception extends \Exception
 {
     /**
+     * Debug Mode
+     *
+     * This will set full debug mode and cause the first add error call to
+     * throw an exception not of Type RozbehSharahi\Rest3\Exception instead
+     * \Exception.
+     *
+     * This way the exception is not caught by Rest3 and rendered as JSON response.
+     *
+     * Specially useful for testing
+     *
+     * @var bool
+     */
+    protected static $debugMode = false;
+
+    /**
      * @var array
      */
     protected $headers = [
@@ -34,6 +49,14 @@ class Exception extends \Exception
     static public function create()
     {
         return new static();
+    }
+
+    /**
+     * @param bool $debugMode
+     */
+    static public function setDebugMode(bool $debugMode)
+    {
+        static::$debugMode = true;
     }
 
     /**
@@ -94,10 +117,14 @@ class Exception extends \Exception
     /**
      * @param string $detail
      * @param int $status
-     * @return Exception
+     * @return $this
+     * @throws \Exception
      */
     public function addError(string $detail, int $status = 400)
     {
+        if (static::$debugMode) {
+            throw new \Exception($detail);
+        }
         $this->errors[] = [
             'status' => $status,
             'detail' => $detail,

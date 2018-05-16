@@ -82,4 +82,20 @@ class Event extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @param Location $location
+     */
+    public function addLocation(Location $location)
+    {
+        $this->locations->attach($location);
+    }
+
+    /**
+     * @param Location $location
+     */
+    public function removeLocation(Location $location)
+    {
+        $this->locations->detach($location);
+    }
+
 }

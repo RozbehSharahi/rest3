@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use function GuzzleHttp\Psr7\stream_for;
 use GuzzleHttp\Psr7\Uri;
 use RozbehSharahi\Rest3\DispatcherInterface;
+use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rexample\Domain\Model\Event;
 use RozbehSharahi\Rexample\Domain\Model\Location;
 use RozbehSharahi\Rexample\Domain\Model\Seminar;
@@ -161,7 +162,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
         self::assertNotEmpty($result);
         self::assertEquals('A Seminar', $result['data']['attributes']['title']);
         self::assertCount(2, $result['data']['relationships']['events']['data']);
-        self::assertCount(2, array_filter($result['included'],function($item) {
+        self::assertCount(2, array_filter($result['included'], function ($item) {
             return $item['type'] === Location::class;
         }));
     }
@@ -385,6 +386,82 @@ class SimpleModelControllerTest extends FunctionalTestBase
         self::assertEquals(200, $response->getStatusCode());
         self::assertEquals('HEAD,GET,PUT,DELETE,OPTIONS', $response->getHeader('Allow')[0]);
         self::assertEquals('null', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function canSetManyToManyRelation()
+    {
+        $this->setUpTestWebsite();
+        $this->setUpDatabaseData('tx_rexample_domain_model_location', [
+            [
+                'pid' => 1,
+                'title' => 'A location'
+            ],
+            [
+                'pid' => 1,
+                'title' => 'Another location'
+            ]
+        ]);
+
+        Exception::setDebugMode(true);
+
+        /** @var RepositoryInterface $repository */
+        $repository = $this->getObjectManager()->get(EventRepository::class);
+        /** @var PersistenceManager $persistenceManager */
+        $persistenceManager = $this->getObjectManager()->get(PersistenceManager::class);
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('POST', new Uri('/rest3/event/')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'type' => Event::class,
+                        'attributes' => [
+                            'title' => 'Created event'
+                        ],
+                        'relationships' => [
+                            'locations' => [2,1]
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+
+        self::assertNotEquals(400,$response->getStatusCode());
+
+        $persistenceManager->clearState();
+        /** @var Event $event */
+        $event = $repository->findByUid(1);
+        self::assertInstanceOf(Event::class, $event);
+        self::assertEquals('Created event', $event->getTitle());
+        self::assertCount(2, $event->getLocations());
+        /** @var Location[] $locations */
+        $locations = $event->getLocations()->toArray();
+        self::assertEquals('Another location', $locations[0]->getTitle());
+
+        $dispatcher->dispatch(
+            (new ServerRequest('PATCH', new Uri('/rest3/event/1')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'type' => Event::class,
+                        'attributes' => [
+                            'title' => 'An event (updated)'
+                        ],
+                        'relationships' => [
+                            'locations' => []
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+
+        $persistenceManager->clearState();
+        $event = $repository->findByUid(1);
+        self::assertEquals('An event (updated)', $event->getTitle());
+        self::assertCount(0, $event->getLocations());
     }
 
 }
