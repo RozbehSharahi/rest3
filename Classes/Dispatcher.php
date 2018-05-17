@@ -86,7 +86,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             return $this->requestStrategyManager->run(
                 $configuration['strategy'],
                 $configuration,
-                [$request, $response]
+                [$request, $response, $this->requestService->getRouteKey($request)]
             );
         } catch (Exception $restException) {
             return new Response(

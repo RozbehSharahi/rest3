@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
+use RozbehSharahi\Rest3\Route\RouteAccessControlInterface;
 use RozbehSharahi\Rest3\Service\ModelService;
 use RozbehSharahi\Rest3\Service\RequestService;
 use RozbehSharahi\Rest3\Service\ResponseService;
@@ -80,6 +81,32 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @var ResponseService
+     */
+    protected $responseService;
+
+    /**
+     * @param ResponseService $responseService
+     */
+    public function injectResponseService(ResponseService $responseService)
+    {
+        $this->responseService = $responseService;
+    }
+
+    /**
+     * @var RouteAccessControlInterface
+     */
+    protected $accessControl;
+
+    /**
+     * @param RouteAccessControlInterface $accessControl
+     */
+    public function injectAccessControl(RouteAccessControlInterface $accessControl)
+    {
+        $this->accessControl = $accessControl;
+    }
+
+    /**
      * @var PersistenceManager
      */
     protected $persistenceManager;
@@ -106,19 +133,6 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
-     * @var ResponseService
-     */
-    protected $responseService;
-
-    /**
-     * @param ResponseService $responseService
-     */
-    public function injectResponseService(ResponseService $responseService)
-    {
-        $this->responseService = $responseService;
-    }
-
-    /**
      * Main method to dispatch a request and its response to a callable object
      *
      * @param ServerRequestInterface $request
@@ -134,34 +148,10 @@ class SimpleModelController implements DispatcherInterface
     ): ResponseInterface {
         $router = new \AltoRouter();
 
-        // Routes
-        $router->map('OPTIONS', '/?', function () use ($request, $response) {
-            return $this->showOptions($request, $response);
-        });
-        $router->map('GET', '/?', function () use ($request, $response) {
-            return $this->findAll($request, $response);
-        });
-        $router->map('GET', '/[i:id]/?', function ($id) use ($request, $response) {
-            return $this->show($request, $response, $id);
-        });
-        $router->map('GET', '/[i:id]/[a:attributeName]/?', function ($id, $attributeName) use ($request, $response) {
-            return $this->showAttribute($request, $response, $id, $attributeName);
-        });
-        $router->map('PATCH', '/[i:id]/?', function ($id) use ($request, $response) {
-            return $this->update($request, $response, $id);
-        });
-        $router->map('POST', '/?', function () use ($request, $response) {
-            return $this->create($request, $response);
-        });
-        $router->map('DELETE', '/[i:id]/?', function ($id) use ($request, $response) {
-            return $this->delete($request, $response, $id);
-        });
+        $this->configureRoutes($request, $response, $routeKey, $router);
 
         // Evaluate the route
-        $match = $router->match(
-            '/' . explode('/', $request->getUri()->getPath(), 4)[3],
-            $request->getMethod()
-        );
+        $match = $router->match('/' . explode('/', $request->getUri()->getPath(), 4)[3], $request->getMethod());
 
         // In case we have a match
         if (!$match || !is_callable($match['target'])) {
@@ -195,7 +185,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->getRepository()->findAll()->toArray(),
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
@@ -214,7 +204,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
@@ -238,7 +228,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model->_getProperties()[$attributeName],
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
@@ -268,7 +258,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
@@ -295,7 +285,7 @@ class SimpleModelController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $model,
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
@@ -364,6 +354,55 @@ class SimpleModelController implements DispatcherInterface
         if (!$assertion) {
             throw Exception::create()->addError($message);
         }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param string $routeKey
+     * @param \AltoRouter|mixed $router
+     */
+    protected function configureRoutes(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $routeKey,
+        $router
+    ): void {
+        $router->map('OPTIONS', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'showOptions');
+                return $this->showOptions($request, $response);
+            });
+        $router->map('GET', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'findAll');
+                return $this->findAll($request, $response);
+            });
+        $router->map('GET', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'show');
+                return $this->show($request, $response, $id);
+            });
+        $router->map('GET', '/[i:id]/[a:attributeName]/?',
+            function ($id, $attributeName) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'showAttribute');
+                return $this->showAttribute($request, $response, $id, $attributeName);
+            });
+        $router->map('PATCH', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'update');
+                return $this->update($request, $response, $id);
+            });
+        $router->map('POST', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'create');
+                return $this->create($request, $response);
+            });
+        $router->map('DELETE', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'delete');
+                return $this->delete($request, $response, $id);
+            });
     }
 
 }

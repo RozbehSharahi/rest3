@@ -56,7 +56,7 @@ class RequestService
      * @param ServerRequestInterface $request
      * @return array
      */
-    public function getIncludeByRequest(ServerRequestInterface $request): array
+    public function getIncludes(ServerRequestInterface $request): array
     {
         return $request->getQueryParams()['include'] ? explode(',', $request->getQueryParams()['include']) : [];
     }

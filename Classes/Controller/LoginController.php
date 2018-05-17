@@ -147,7 +147,7 @@ class LoginController implements DispatcherInterface
         return $this->responseService->jsonResponse(
             $this->restNormalizer->normalize(
                 $this->frontendUserService->getCurrentUser(),
-                $this->requestService->getIncludeByRequest($request)
+                $this->requestService->getIncludes($request)
             )
         );
     }
