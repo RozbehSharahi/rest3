@@ -19,11 +19,17 @@ class Seminar extends AbstractEntity
     protected $events;
 
     /**
+     * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\FileReference>
+     */
+    protected $images;
+
+    /**
      * Seminar constructor.
      */
     public function __construct()
     {
         $this->events = new ObjectStorage();
+        $this->images = new ObjectStorage();
     }
 
     /**
@@ -59,6 +65,24 @@ class Seminar extends AbstractEntity
     public function setEvents(ObjectStorage $events)
     {
         $this->events = $events;
+        return $this;
+    }
+
+    /**
+     * @return ObjectStorage
+     */
+    public function getImages()
+    {
+        return $this->images;
+    }
+
+    /**
+     * @param ObjectStorage $images
+     * @return Seminar
+     */
+    public function setImages(ObjectStorage $images)
+    {
+        $this->images = $images;
         return $this;
     }
 

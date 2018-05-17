@@ -1,5 +1,8 @@
 <?php
 
+use TYPO3\CMS\Core\Resource\File as Rest3File;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility as Rest3ExtensionManagementUtility;
+
 return [
     'ctrl' => [
         'title' => 'Rexample Seminar',
@@ -22,8 +25,8 @@ return [
             'fe_group' => 'fe_group',
         ],
     ],
-    'types' => array (
-        '0' => array('showitem' => 'title, events, sys_language_uid, l10n_parent, l10n_diffsource')
+    'types' => array(
+        '0' => array('showitem' => 'title, images, events, sys_language_uid, l10n_parent, l10n_diffsource')
     ),
     'columns' => [
         'sys_language_uid' => [
@@ -103,5 +106,20 @@ return [
                 ],
             ],
         ],
+        'images' => [
+            'label' => 'Image',
+            'config' => Rest3ExtensionManagementUtility::getFileFieldTCAConfig('images', [
+                'overrideChildTca' => [
+                    'types' => [
+                        Rest3File::FILETYPE_IMAGE => [
+                            'showitem' => '--palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette,
+                                          --palette--;;imageoverlayPalette,
+                                          --palette--;;filePalette'
+                        ],
+                    ],
+                ],
+            ], 'jpg,jpeg,png,gif,svg')
+        ]
+
     ]
 ];
