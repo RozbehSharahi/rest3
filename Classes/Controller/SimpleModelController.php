@@ -153,12 +153,12 @@ class SimpleModelController implements DispatcherInterface
         // Evaluate the route
         $match = $router->match('/' . explode('/', $request->getUri()->getPath(), 4)[3], $request->getMethod());
 
-        // In case we have a match
+        // In case we have no match
         if (!$match || !is_callable($match['target'])) {
             throw Exception::create()->addError('Route could not be interpreted');
         }
 
-        // No match
+        // Dispatch
         return call_user_func_array(
             $match['target'],
             array_merge($match['params'], [$request, $response])
