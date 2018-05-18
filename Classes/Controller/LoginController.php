@@ -4,6 +4,7 @@ namespace RozbehSharahi\Rest3\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RozbehSharahi\Rest3\Authentication\TokenManagerInterface;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
 use RozbehSharahi\Rest3\Service\FrontendUserService;
@@ -68,6 +69,19 @@ class LoginController implements DispatcherInterface
     }
 
     /**
+     * @var TokenManagerInterface
+     */
+    protected $tokenManager;
+
+    /**
+     * @param TokenManagerInterface $tokenManager
+     */
+    public function injectTokenManager(TokenManagerInterface $tokenManager)
+    {
+        $this->tokenManager = $tokenManager;
+    }
+
+    /**
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @return ResponseInterface
@@ -87,6 +101,10 @@ class LoginController implements DispatcherInterface
 
         if (trim($path, '/') === 'user') {
             return $this->user($request, $response);
+        }
+
+        if (trim($path, '/') === 'authentication-token') {
+            return $this->authenticationToken($request, $response);
         }
 
         throw Exception::create()->addError('Could no determine task');
@@ -140,7 +158,7 @@ class LoginController implements DispatcherInterface
      */
     protected function user(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        if(!$this->frontendUserService->getCurrentUser()) {
+        if (!$this->frontendUserService->getCurrentUser()) {
             throw Exception::create()->addError('Not logged in');
         }
 
@@ -150,6 +168,36 @@ class LoginController implements DispatcherInterface
                 $this->requestService->getIncludes($request)
             )
         );
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    protected function authenticationToken(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ): ResponseInterface {
+        $requestData = $this->requestService->getParameters($request);
+
+        $this->assert(!empty($requestData['username']), 'User name not send !');
+        $this->assert(!empty($requestData['password']), 'Password not send !');
+
+        if (!$this->frontendUserService->checkCredentials($requestData['username'], $requestData['password'])) {
+            throw Exception::create()->addError('Wrong credentials');
+        }
+
+        /** @var FrontendUser $user */
+        $user = $this->frontendUserService->findUser($requestData['username']);
+        $token = $this->tokenManager->createToken($user->getUid());
+
+        return $this->responseService->jsonResponse([
+            'authentication' => [
+                'token' => $token
+            ]
+        ]);
     }
 
     /**

@@ -87,7 +87,7 @@ class ConfigurationService
 
     /**
      * @param string $path
-     * @return array|null
+     * @return array|string|null
      */
     public function getSetting(string $path)
     {
@@ -112,9 +112,16 @@ class ConfigurationService
             return [];
         }
 
+        $userGroups = $this->frontendUserService->getCurrentUser()->getUsergroup();
+
+        // No user groups, so no settings
+        if(empty($userGroups)) {
+            return [];
+        }
+
         $groupIds = array_map(function (FrontendUserGroup $group) {
             return $group->getUid();
-        }, $this->frontendUserService->getCurrentUser()->getUsergroup()->toArray());
+        }, $userGroups->toArray());
 
         $groupsQuery = $this->frontendUserService->getFrontendUserGroupRepository()->createQuery();
         $groupsQuery->setQuerySettings((new Typo3QuerySettings())->setRespectStoragePage(false));

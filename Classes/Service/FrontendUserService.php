@@ -59,7 +59,6 @@ class FrontendUserService
     public function initializeObject()
     {
         $this->frontendUserAuthentication = &$GLOBALS['TSFE']->fe_user;
-        $this->currentUser = $this->getCurrentUserId() ? $this->frontendUserRepository->findByUid($this->getCurrentUserId()) : null;
     }
 
     /**
@@ -90,6 +89,25 @@ class FrontendUserService
         $setSessionCookieMethod = $reflection->getMethod('setSessionCookie');
         $setSessionCookieMethod->setAccessible(true);
         $setSessionCookieMethod->invoke($this->frontendUserAuthentication);
+
+        $GLOBALS['TSFE']->fe_user->user = $user;
+    }
+
+    /**
+     * @param FrontendUser $user
+     */
+    public function authenticateUser(FrontendUser $user)
+    {
+        $this->frontendUserAuthentication->checkPid = 0;
+        $this->frontendUserAuthentication->forceSetCookie = true;
+        $info = $this->frontendUserAuthentication->getAuthInfoArray();
+        $user = $this->frontendUserAuthentication->fetchUserRecord($info['db_user'], $user->getUsername());
+
+        $GLOBALS['TSFE']->loginUser = 1;
+        $this->frontendUserAuthentication->is_permanent = false;
+        $this->frontendUserAuthentication->lifetime = 60;
+        $this->frontendUserAuthentication->user['ses_permanent'] = false;
+        $this->frontendUserAuthentication->createUserSession($user);
 
         $GLOBALS['TSFE']->fe_user->user = $user;
     }
@@ -137,7 +155,9 @@ class FrontendUserService
      */
     public function getCurrentUser()
     {
-        return $this->currentUser;
+        /** @var FrontendUser $user */
+        $user = $this->getCurrentUserId() ? $this->frontendUserRepository->findByUid($this->getCurrentUserId()) : null;
+        return $user;
     }
 
     /**
