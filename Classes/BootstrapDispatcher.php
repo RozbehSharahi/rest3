@@ -92,14 +92,8 @@ class BootstrapDispatcher
             return $GLOBALS['TSFE'];
         }
 
-        $GLOBALS['TSFE'] = self::getObjectManager()->get(
-            TypoScriptFrontendController::class,
-            null,
-            $pageUid,
-            0,
-            1,
-            'rest3-cache-hash'
-        );
+        $GLOBALS['TSFE'] = self::getObjectManager()
+            ->get(TypoScriptFrontendController::class, null, $pageUid, 0, 1, 'rest3-cache-hash');
 
         EidUtility::initFeUser();
         EidUtility::initTCA();
