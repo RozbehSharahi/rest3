@@ -1,3 +1,7 @@
+CREATE TABLE fe_groups (
+  tx_rest3_settings text
+);
+
 CREATE TABLE tx_rexample_domain_model_seminar (
   uid int(11) NOT NULL auto_increment,
   pid int(11) DEFAULT '0' NOT NULL,

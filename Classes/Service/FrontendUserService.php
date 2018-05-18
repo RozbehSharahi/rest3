@@ -3,6 +3,7 @@
 namespace RozbehSharahi\Rest3\Service;
 
 use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
@@ -34,6 +35,19 @@ class FrontendUserService
     public function injectFrontendUserRepository(FrontendUserRepository $frontendUserRepository)
     {
         $this->frontendUserRepository = $frontendUserRepository;
+    }
+
+    /**
+     * @var FrontendUserGroupRepository
+     */
+    protected $frontendUserGroupRepository;
+
+    /**
+     * @param FrontendUserGroupRepository $frontendUserGroupRepository
+     */
+    public function injectFrontendUserGroupRepository(FrontendUserGroupRepository $frontendUserGroupRepository)
+    {
+        $this->frontendUserGroupRepository = $frontendUserGroupRepository;
     }
 
     /**
@@ -142,6 +156,15 @@ class FrontendUserService
     public function getFrontendUserRepository()
     {
         return $this->frontendUserRepository;
+    }
+
+
+    /**
+     * @return FrontendUserGroupRepository
+     */
+    public function getFrontendUserGroupRepository()
+    {
+        return $this->frontendUserGroupRepository;
     }
 
     /**

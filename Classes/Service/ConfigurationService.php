@@ -2,6 +2,7 @@
 
 namespace RozbehSharahi\Rest3\Service;
 
+use TYPO3\CMS\Core\TypoScript\Parser\TypoScriptParser;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
@@ -37,6 +38,19 @@ class ConfigurationService
     }
 
     /**
+     * @var TypoScriptParser
+     */
+    protected $typoScriptParser;
+
+    /**
+     * @param TypoScriptParser $typoScriptParser
+     */
+    public function injectTypoScriptParser(TypoScriptParser $typoScriptParser)
+    {
+        $this->typoScriptParser = $typoScriptParser;
+    }
+
+    /**
      * @return array
      */
     public function getSettings(): array
@@ -62,6 +76,22 @@ class ConfigurationService
         } catch (\Exception $exception) {
             return null;
         }
+    }
+
+    /**
+     * @return TypoScriptService
+     */
+    public function getTypoScriptService()
+    {
+        return $this->typoScriptService;
+    }
+
+    /**
+     * @return TypoScriptParser
+     */
+    public function getTypoScriptParser()
+    {
+        return $this->typoScriptParser;
     }
 
 }
