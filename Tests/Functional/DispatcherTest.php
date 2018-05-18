@@ -12,8 +12,6 @@ class DispatcherTest extends FunctionalTestBase
 {
 
     /**
-     * This tests seminars method-class strategy
-     *
      * @test
      */
     public function canSeeSeminarRoute()

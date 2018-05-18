@@ -28,7 +28,7 @@ class RouteManagerTest extends FunctionalTestBase
         self::assertTrue($routeManager->hasRouteConfiguration('seminar'));
 
         $configuration = $routeManager->getRouteConfiguration('seminar');
-        self::assertEquals('class-method', $configuration['strategy']);
+        self::assertEquals('dispatcher', $configuration['strategy']);
     }
 
     /**

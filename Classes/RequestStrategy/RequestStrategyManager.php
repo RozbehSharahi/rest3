@@ -29,7 +29,7 @@ class RequestStrategyManager implements RequestStrategyManagerInterface
      */
     public function run(string $strategy, array $configuration, array $parameters = []): ResponseInterface
     {
-        if ($strategy === 'class-method') {
+        if ($strategy === 'dispatcher') {
             return $this->runClassMethod($configuration, $parameters);
         }
 
@@ -45,7 +45,7 @@ class RequestStrategyManager implements RequestStrategyManagerInterface
     protected function runClassMethod(array $configuration, array $parameters): ResponseInterface
     {
         if (empty($configuration['className']) || empty($configuration['methodName'])) {
-            throw new \Exception('Strategy `class-method` needs a `className` and a `methodName`');
+            throw new \Exception('Strategy `dispatcher` needs a `className` and a `methodName`');
         }
         $object = $this->objectManager->get($configuration['className']);
         return call_user_func_array([$object, $configuration['methodName']], $parameters);

@@ -2,7 +2,7 @@ plugin.tx_rest3 {
     settings {
         routes {
             login {
-                strategy = class-method
+                strategy = dispatcher
                 className = RozbehSharahi\Rest3\Controller\LoginController
                 methodName = dispatch
             }

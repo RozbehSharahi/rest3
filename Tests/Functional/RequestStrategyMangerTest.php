@@ -12,8 +12,6 @@ class RequestStrategyMangerTest extends FunctionalTestBase
 {
 
     /**
-     * This tests seminars method-class strategy
-     *
      * @test
      */
     public function canRunByStrategy()
@@ -21,7 +19,7 @@ class RequestStrategyMangerTest extends FunctionalTestBase
         /** @var RequestStrategyManager $requestStrategyManager */
         $requestStrategyManager = $this->getObjectManager()->get(RequestStrategyManager::class);
         $response = $requestStrategyManager->run(
-            'class-method',
+            'dispatcher',
             [
                 'className' => MessageRoute::class,
                 'methodName' => 'dispatch'

@@ -6,17 +6,17 @@ plugin.tx_rest3 {
     settings {
         routes {
             seminar {
-                strategy = class-method
+                strategy = dispatcher
                 className = RozbehSharahi\Rexample\Controller\SeminarController
                 methodName = dispatch
             }
             event {
-                strategy = class-method
+                strategy = dispatcher
                 className = RozbehSharahi\Rexample\Controller\EventController
                 methodName = dispatch
             }
             message {
-                strategy = class-method
+                strategy = dispatcher
                 className = RozbehSharahi\Rexample\MessageRoute
                 methodName = dispatch
             }
