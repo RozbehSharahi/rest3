@@ -88,7 +88,7 @@ class BootstrapDispatcher
      */
     private static function getFrontendController($pageUid): TypoScriptFrontendController
     {
-        if ($GLOBALS['TSFE']) {
+        if ($GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
             return $GLOBALS['TSFE'];
         }
 
