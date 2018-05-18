@@ -166,6 +166,55 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param string $routeKey
+     * @param \AltoRouter|mixed $router
+     */
+    protected function configureRoutes(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $routeKey,
+        $router
+    ): void {
+        $router->map('OPTIONS', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'showOptions');
+                return $this->showOptions($request, $response);
+            });
+        $router->map('GET', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'findAll');
+                return $this->findAll($request, $response);
+            });
+        $router->map('GET', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'show');
+                return $this->show($request, $response, $id);
+            });
+        $router->map('GET', '/[i:id]/[a:attributeName]/?',
+            function ($id, $attributeName) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'showAttribute');
+                return $this->showAttribute($request, $response, $id, $attributeName);
+            });
+        $router->map('PATCH', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'update');
+                return $this->update($request, $response, $id);
+            });
+        $router->map('POST', '/?',
+            function () use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'create');
+                return $this->create($request, $response);
+            });
+        $router->map('DELETE', '/[i:id]/?',
+            function ($id) use ($request, $response, $routeKey) {
+                $this->accessControl->assertAccess($routeKey, 'delete');
+                return $this->delete($request, $response, $id);
+            });
+    }
+
+    /**
      * @param RequestInterface $request
      * @param ResponseInterface $response
      * @return ResponseInterface
@@ -354,55 +403,6 @@ class SimpleModelController implements DispatcherInterface
         if (!$assertion) {
             throw Exception::create()->addError($message);
         }
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param string $routeKey
-     * @param \AltoRouter|mixed $router
-     */
-    protected function configureRoutes(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        string $routeKey,
-        $router
-    ): void {
-        $router->map('OPTIONS', '/?',
-            function () use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'showOptions');
-                return $this->showOptions($request, $response);
-            });
-        $router->map('GET', '/?',
-            function () use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'findAll');
-                return $this->findAll($request, $response);
-            });
-        $router->map('GET', '/[i:id]/?',
-            function ($id) use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'show');
-                return $this->show($request, $response, $id);
-            });
-        $router->map('GET', '/[i:id]/[a:attributeName]/?',
-            function ($id, $attributeName) use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'showAttribute');
-                return $this->showAttribute($request, $response, $id, $attributeName);
-            });
-        $router->map('PATCH', '/[i:id]/?',
-            function ($id) use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'update');
-                return $this->update($request, $response, $id);
-            });
-        $router->map('POST', '/?',
-            function () use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'create');
-                return $this->create($request, $response);
-            });
-        $router->map('DELETE', '/[i:id]/?',
-            function ($id) use ($request, $response, $routeKey) {
-                $this->accessControl->assertAccess($routeKey, 'delete');
-                return $this->delete($request, $response, $id);
-            });
     }
 
 }
