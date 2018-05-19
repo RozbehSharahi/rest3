@@ -94,7 +94,7 @@ class LoginControllerTest extends FunctionalTestBase
 
         $response = $dispatcher->dispatch(
             new ServerRequest(new Uri('/rest3/login/user'), 'POST', stream_for(json_encode([
-                'rest3_token' => $token
+                TokenManagerInterface::TOKEN_NAME => $token
             ]))),
             new Response()
         );

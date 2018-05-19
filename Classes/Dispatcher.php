@@ -134,7 +134,8 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      */
     protected function authenticate(ServerRequestInterface $request)
     {
-        $token = $this->requestService->getParameters($request)['rest3_token'];
+        $token = $this->requestService->getParameters($request)[TokenManagerInterface::TOKEN_NAME] ?:
+            end($request->getHeader(TokenManagerInterface::TOKEN_NAME));
 
         if (empty($token)) {
             return;

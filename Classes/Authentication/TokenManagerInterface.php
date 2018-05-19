@@ -5,6 +5,8 @@ namespace RozbehSharahi\Rest3\Authentication;
 interface TokenManagerInterface
 {
 
+    const TOKEN_NAME = 'rest3_token';
+
     /**
      * @param string $token
      * @return bool
