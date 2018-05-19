@@ -8,7 +8,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Exception;
-use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
+use RozbehSharahi\Rest3\Normalizer\Normalizer;
 use RozbehSharahi\Rest3\Route\RouteAccessControlInterface;
 use RozbehSharahi\Rest3\Service\ModelService;
 use RozbehSharahi\Rest3\Service\RequestService;
@@ -55,16 +55,16 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
-     * @var RestNormalizer
+     * @var Normalizer
      */
-    protected $restNormalizer;
+    protected $normalizer;
 
     /**
-     * @param RestNormalizer $restNormalizer
+     * @param Normalizer $normalizer
      */
-    public function injectRestNormalizer(RestNormalizer $restNormalizer)
+    public function injectRestNormalizer(Normalizer $normalizer)
     {
-        $this->restNormalizer = $restNormalizer;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -232,7 +232,7 @@ class SimpleModelController implements DispatcherInterface
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $this->getRepository()->findAll()->toArray(),
                 $this->requestService->getIncludes($request)
             )
@@ -251,7 +251,7 @@ class SimpleModelController implements DispatcherInterface
         $model = $this->getRepository()->findByUid($id);
         $this->assert(!empty($model), 'Not found');
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $model,
                 $this->requestService->getIncludes($request)
             )
@@ -275,7 +275,7 @@ class SimpleModelController implements DispatcherInterface
         $model = $this->getRepository()->findByUid($id);
         $this->assert(!empty($model), 'Not found');
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $model->_getProperties()[$attributeName],
                 $this->requestService->getIncludes($request)
             )
@@ -305,7 +305,7 @@ class SimpleModelController implements DispatcherInterface
         $this->persistenceManager->persistAll();
 
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $model,
                 $this->requestService->getIncludes($request)
             )
@@ -332,7 +332,7 @@ class SimpleModelController implements DispatcherInterface
         $this->persistenceManager->persistAll();
 
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $model,
                 $this->requestService->getIncludes($request)
             )
@@ -354,7 +354,7 @@ class SimpleModelController implements DispatcherInterface
         $this->getRepository()->remove($model);
         $this->persistenceManager->persistAll();
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $this->modelName . " with ID `$id` was deleted"
             )
         );

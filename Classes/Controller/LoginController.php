@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Authentication\TokenManagerInterface;
 use RozbehSharahi\Rest3\Exception;
-use RozbehSharahi\Rest3\Normalizer\RestNormalizer;
+use RozbehSharahi\Rest3\Normalizer\Normalizer;
 use RozbehSharahi\Rest3\Service\FrontendUserService;
 use RozbehSharahi\Rest3\Service\RequestService;
 use RozbehSharahi\Rest3\Service\ResponseService;
@@ -56,16 +56,16 @@ class LoginController implements DispatcherInterface
     }
 
     /**
-     * @var RestNormalizer
+     * @var Normalizer
      */
-    protected $restNormalizer;
+    protected $normalizer;
 
     /**
-     * @param RestNormalizer $restNormalizer
+     * @param Normalizer $normalizer
      */
-    public function injectRestNormalizer(RestNormalizer $restNormalizer)
+    public function injectRestNormalizer(Normalizer $normalizer)
     {
-        $this->restNormalizer = $restNormalizer;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -163,7 +163,7 @@ class LoginController implements DispatcherInterface
         }
 
         return $this->responseService->jsonResponse(
-            $this->restNormalizer->normalize(
+            $this->normalizer->normalize(
                 $this->frontendUserService->getCurrentUser(),
                 $this->requestService->getIncludes($request)
             )

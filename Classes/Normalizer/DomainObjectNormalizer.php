@@ -8,19 +8,23 @@ use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\ColumnMap;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
-
-class RestNormalizer
+class DomainObjectNormalizer implements DomainObjectNormalizerInterface
 {
+
+    /**
+     * @var Normalizer
+     */
+    protected $normalizer;
+
+    /**
+     * @var array
+     */
+    protected $excludedAttributes = [];
 
     /**
      * @var DataMapper
      */
     protected $dataMapper;
-
-    /**
-     * @var array
-     */
-    protected $includedStore = [];
 
     /**
      * @param DataMapper $dataMapper
@@ -31,42 +35,30 @@ class RestNormalizer
     }
 
     /**
-     * @param mixed $input
-     * @param array $include
-     * @return array|mixed
+     * @return int
      */
-    public function normalize($input, $include = [])
+    public function getPriority(): int
     {
-        // Simple values
-        if (!is_array($input) && !$input instanceof \Traversable && !$input instanceof DomainObjectInterface) {
-            return $this->normalizeValue($input, 'message');
-        }
+        return 50;
+    }
 
-        $data = null;
+    /**
+     * @param DomainObjectInterface $model
+     * @return bool
+     */
+    public function canNormalize(DomainObjectInterface $model): bool
+    {
+        return true;
+    }
 
-        // We have to reset always
-        $this->includedStore = [];
-
-        // Lists
-        if (is_array($input) || $input instanceof \Traversable) {
-            // We make sure to have an array
-            $input = $input instanceof \Traversable ? array_values(iterator_to_array($input)) : $input;
-
-            $data = array_map(function (DomainObjectInterface $object) use ($include) {
-                return $this->normalizeModel($object, $include);
-            }, $input);
-        }
-
-        // Single
-        if ($input instanceof DomainObjectInterface) {
-            $data = $this->normalizeModel($input, $include);
-        }
-
-        // Only data root can have includes
-        return [
-            'data' => $data,
-            'included' => array_values($this->includedStore)
-        ];
+    /**
+     * @param $normalizer
+     * @return DomainObjectNormalizerInterface
+     */
+    public function setNormalizer($normalizer)
+    {
+        $this->normalizer = $normalizer;
+        return $this;
     }
 
     /**
@@ -74,7 +66,7 @@ class RestNormalizer
      * @param array $include
      * @return array
      */
-    protected function normalizeModel(DomainObjectInterface $model, array $include = [])
+    public function normalizeDomainObject(DomainObjectInterface $model, array $include = [])
     {
         $data = [];
 
@@ -101,9 +93,13 @@ class RestNormalizer
         foreach ($model->_getProperties() as $propertyName => $propertyValue) {
             $propertyMap = $dataMap->getColumnMap($propertyName);
 
+            if (in_array($propertyName, $this->excludedAttributes)) {
+                continue;
+            }
+
             // Only non relations allowed
             if ($propertyMap && $propertyMap->getTypeOfRelation() === ColumnMap::RELATION_NONE) {
-                $attributes[$propertyName] = $this->normalizeValue($propertyValue);
+                $attributes[$propertyName] = $this->normalizer->normalizeValue($propertyValue);
             }
 
             // Additional allowed fields
@@ -164,7 +160,7 @@ class RestNormalizer
             $propertyValue instanceof DomainObjectInterface) {
             $relationModel = $propertyValue;
 
-            $this->addModelToIncludeStore(
+            $this->normalizer->addModelToIncludeStore(
                 $relationModel,
                 $this->getNextLevelIncludeFor($relationName, $include)
             );
@@ -184,7 +180,7 @@ class RestNormalizer
         if ($hasManyRelation && $propertyValue instanceof ObjectStorage) {
             return [
                 'data' => array_map(function (DomainObjectInterface $relationModel) use ($include, $relationName) {
-                    $this->addModelToIncludeStore(
+                    $this->normalizer->addModelToIncludeStore(
                         $relationModel,
                         $this->getNextLevelIncludeFor($relationName, $include)
                     );
@@ -225,49 +221,5 @@ class RestNormalizer
             return strpos($key, '.') === false;
         });
     }
-
-    /**
-     * Normalize simple values that are not models
-     *
-     * @param mixed $value
-     * @param string $wrap
-     * @return mixed|string
-     */
-    protected function normalizeValue($value, $wrap = null)
-    {
-        if ($value instanceof \DateTime) {
-            $value = $value->format(DATE_ATOM);
-        }
-
-        return $wrap ? [$wrap => $value] : $value;
-    }
-
-    /**
-     * @param DomainObjectInterface $relationModel
-     * @return string
-     */
-    protected function getModelHash(DomainObjectInterface $relationModel): string
-    {
-        return get_class($relationModel) . '-' . $relationModel->getUid();
-    }
-
-    /**
-     * Include recursively to store, and take care if already there.
-     *
-     * This one will merge the include normalization, because it may be requested from different paths,
-     * with different relations. And it will also continue the recursion.
-     *
-     * @param DomainObjectInterface $model
-     * @param array $include
-     */
-    protected function addModelToIncludeStore(DomainObjectInterface $model, array $include)
-    {
-        $modelHash = $this->getModelHash($model);
-        $this->includedStore[$modelHash] = array_replace_recursive(
-            $this->includedStore[$modelHash] ?: [],
-            $this->normalizeModel($model, $include)
-        );
-    }
-
 
 }
