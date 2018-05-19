@@ -192,6 +192,15 @@ class Normalizer
     }
 
     /**
+     * @param string $modelName
+     * @return string
+     */
+    public function getTypeByModelName(string $modelName)
+    {
+        return $this->configurationService->getSetting('typeMappings.' . $modelName) ?: $modelName;
+    }
+
+    /**
      * @param DomainObjectInterface $relationModel
      * @return string
      */

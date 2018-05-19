@@ -71,7 +71,7 @@ class DomainObjectNormalizer implements DomainObjectNormalizerInterface
         $data = [];
 
         $data['id'] = $model->getUid();
-        $data['type'] = get_class($model);
+        $data['type'] = $this->normalizer->getTypeByModelName(get_class($model));
         $data['attributes'] = $this->getAttributes($model);
 
         // Get relations if present
@@ -167,7 +167,7 @@ class DomainObjectNormalizer implements DomainObjectNormalizerInterface
             return [
                 'data' => [
                     'id' => $relationModel->getUid(),
-                    'type' => get_class($relationModel),
+                    'type' => $this->normalizer->getTypeByModelName(get_class($relationModel)),
                 ]
             ];
         }
@@ -186,7 +186,7 @@ class DomainObjectNormalizer implements DomainObjectNormalizerInterface
                     );
                     return [
                         'id' => $relationModel->getUid(),
-                        'type' => get_class($relationModel),
+                        'type' => $this->normalizer->getTypeByModelName(get_class($relationModel)),
                     ];
                 }, $propertyValue->toArray())
             ];
