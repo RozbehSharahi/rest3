@@ -10,12 +10,19 @@ class RequestService
 {
 
     /**
+     * @var array
+     */
+    static protected $bodyCache = [];
+
+    /**
      * @param ServerRequestInterface $request
      * @return array
      */
     public function getData(ServerRequestInterface $request): array
     {
-        return json_decode($request->getBody(), true) ?: [];
+        $hash = spl_object_hash($request);
+        static::$bodyCache[$hash] = static::$bodyCache[$hash] ?: $request->getBody()->__toString();
+        return json_decode(static::$bodyCache[$hash], true) ?: [];
     }
 
     /**
