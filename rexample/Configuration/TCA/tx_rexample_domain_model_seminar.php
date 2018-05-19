@@ -26,7 +26,7 @@ return [
         ],
     ],
     'types' => array(
-        '0' => array('showitem' => 'title, images, events, sys_language_uid, l10n_parent, l10n_diffsource')
+        '0' => array('showitem' => 'title, description, images, events, sys_language_uid, l10n_parent, l10n_diffsource')
     ),
     'columns' => [
         'sys_language_uid' => [
@@ -119,6 +119,13 @@ return [
                     ],
                 ],
             ], 'jpg,jpeg,png,gif,svg')
+        ],
+
+        'description' => [
+            'label' => 'Description',
+            'config' => [
+                'type' => 'text'
+            ]
         ]
 
     ]

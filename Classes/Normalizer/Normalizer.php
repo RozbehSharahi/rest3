@@ -2,6 +2,7 @@
 
 namespace RozbehSharahi\Rest3\Normalizer;
 
+use RozbehSharahi\Rest3\Service\ConfigurationService;
 use TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
@@ -46,18 +47,35 @@ class Normalizer
     }
 
     /**
+     * @var ConfigurationService
+     */
+    protected $configurationService;
+
+    /**
+     * @param ConfigurationService $configurationService
+     */
+    public function injectConfigurationService(ConfigurationService $configurationService)
+    {
+        $this->configurationService = $configurationService;
+    }
+
+    /**
      * Init object
      */
     public function initializeObject()
     {
-        /** @var DomainObjectNormalizer $domainObjectNormalizer */
-        $domainObjectNormalizer = $this->objectManager->get(DomainObjectNormalizer::class);
+        /** @var array $normalizerNames */
+        $normalizerNames = $this->configurationService->getSetting('domainObjectNormalizers');
 
-        /** @var DomainObjectNormalizer $frontendUserNormalizer */
-        $frontendUserNormalizer = $this->objectManager->get(FrontendUserNormalizer::class);
+        if (!is_array($normalizerNames)) {
+            throw new \Exception('Domain Object Normalizers typo script is not configured correctly.');
+        }
 
-        $this->addDomainObjectNormalizer($domainObjectNormalizer->setNormalizer($this));
-        $this->addDomainObjectNormalizer($frontendUserNormalizer->setNormalizer($this));
+        foreach ($normalizerNames as $normalizerName) {
+            /** @var DomainObjectNormalizerInterface $normalizer */
+            $normalizer = $this->objectManager->get($normalizerName);
+            $this->addDomainObjectNormalizer($normalizer->setNormalizer($this));
+        }
     }
 
     /**

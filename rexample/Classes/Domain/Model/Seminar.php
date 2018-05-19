@@ -14,6 +14,11 @@ class Seminar extends AbstractEntity
     protected $title;
 
     /**
+     * @var string
+     */
+    protected $description;
+
+    /**
      * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\RozbehSharahi\Rexample\Domain\Model\Event>
      */
     protected $events;
@@ -47,6 +52,24 @@ class Seminar extends AbstractEntity
     public function setTitle($title)
     {
         $this->title = $title;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     * @return Seminar
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
         return $this;
     }
 
