@@ -39,7 +39,7 @@ class RestNormalizer
     {
         // Simple values
         if (!is_array($input) && !$input instanceof \Traversable && !$input instanceof DomainObjectInterface) {
-            return $this->extractValue($input, 'message');
+            return $this->normalizeValue($input, 'message');
         }
 
         $data = null;
@@ -53,13 +53,13 @@ class RestNormalizer
             $input = $input instanceof \Traversable ? array_values(iterator_to_array($input)) : $input;
 
             $data = array_map(function (DomainObjectInterface $object) use ($include) {
-                return $this->extractModel($object, $include);
+                return $this->normalizeModel($object, $include);
             }, $input);
         }
 
         // Single
         if ($input instanceof DomainObjectInterface) {
-            $data = $this->extractModel($input, $include);
+            $data = $this->normalizeModel($input, $include);
         }
 
         // Only data root can have includes
@@ -74,7 +74,7 @@ class RestNormalizer
      * @param array $include
      * @return array
      */
-    protected function extractModel(DomainObjectInterface $model, array $include = [])
+    protected function normalizeModel(DomainObjectInterface $model, array $include = [])
     {
         $data = [];
 
@@ -103,7 +103,7 @@ class RestNormalizer
 
             // Only non relations allowed
             if ($propertyMap && $propertyMap->getTypeOfRelation() === ColumnMap::RELATION_NONE) {
-                $attributes[$propertyName] = $this->extractValue($propertyValue);
+                $attributes[$propertyName] = $this->normalizeValue($propertyValue);
             }
 
             // Additional allowed fields
@@ -227,13 +227,13 @@ class RestNormalizer
     }
 
     /**
-     * Extract simple values that are not models
+     * Normalize simple values that are not models
      *
      * @param mixed $value
      * @param string $wrap
      * @return mixed|string
      */
-    protected function extractValue($value, $wrap = null)
+    protected function normalizeValue($value, $wrap = null)
     {
         if ($value instanceof \DateTime) {
             $value = $value->format(DATE_ATOM);
@@ -254,7 +254,7 @@ class RestNormalizer
     /**
      * Include recursively to store, and take care if already there.
      *
-     * This one will merge the include extraction, because it may be requested from different paths,
+     * This one will merge the include normalization, because it may be requested from different paths,
      * with different relations. And it will also continue the recursion.
      *
      * @param DomainObjectInterface $model
@@ -265,7 +265,7 @@ class RestNormalizer
         $modelHash = $this->getModelHash($model);
         $this->includedStore[$modelHash] = array_replace_recursive(
             $this->includedStore[$modelHash] ?: [],
-            $this->extractModel($model, $include)
+            $this->normalizeModel($model, $include)
         );
     }
 
