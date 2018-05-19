@@ -39,7 +39,7 @@ class DomainObjectNormalizer implements DomainObjectNormalizerInterface
      */
     public function getPriority(): int
     {
-        return 50;
+        return 40;
     }
 
     /**

@@ -17,7 +17,7 @@ class FrontendUserNormalizer extends DomainObjectNormalizer
      */
     public function getPriority(): int
     {
-        return 60;
+        return 45;
     }
 
     /**
