@@ -11,5 +11,8 @@ plugin.tx_rest3 {
             10 = RozbehSharahi\Rest3\Normalizer\DomainObjectNormalizer
             20 = RozbehSharahi\Rest3\Normalizer\FrontendUserNormalizer
         }
+        additionalHeaders {
+            Content-Type = application/json
+        }
     }
 }

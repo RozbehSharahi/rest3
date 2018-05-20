@@ -12,6 +12,7 @@ use RozbehSharahi\Rest3\RequestStrategy\RequestStrategyManagerInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 use RozbehSharahi\Rest3\Service\FrontendUserService;
 use RozbehSharahi\Rest3\Service\RequestService;
+use RozbehSharahi\Rest3\Service\ResponseService;
 use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
 
 class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\DispatcherInterface
@@ -61,6 +62,19 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
     }
 
     /**
+     * @var ResponseService
+     */
+    protected $responseService;
+
+    /**
+     * @param ResponseService $responseService
+     */
+    public function injectResponseService(ResponseService $responseService)
+    {
+        $this->responseService = $responseService;
+    }
+
+    /**
      * @var TokenManagerInterface
      */
     protected $tokenManager;
@@ -95,6 +109,17 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      */
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response)
     {
+        $response = $this->run($request, $response);
+        return $response;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return Response|ResponseInterface|static
+     */
+    protected function run(ServerRequestInterface $request, ResponseInterface $response)
+    {
         if ($this->isRestRootCall($request)) {
             return $response->withBody(stream_for('Welcome to Rest3'));
         }
@@ -105,7 +130,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             $restException = Exception::create()->addError('This route does not exists', 404);
             return new Response(
                 $restException->getStatusCode(),
-                $restException->getHeaders(),
+                array_replace_recursive($restException->getHeaders(), $this->responseService->getAdditionalHeaders()),
                 $restException->getErrorJson()
             );
         }
@@ -122,7 +147,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
         } catch (Exception $restException) {
             return new Response(
                 $restException->getStatusCode(),
-                $restException->getHeaders(),
+                array_replace_recursive($restException->getHeaders(), $this->responseService->getAdditionalHeaders()),
                 stream_for($restException->getErrorJson())
             );
         }

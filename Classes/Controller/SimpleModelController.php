@@ -198,7 +198,7 @@ class SimpleModelController implements DispatcherInterface
         string $routeKey,
         $router
     ): void {
-        $router->map('OPTIONS', '/?',
+        $router->map('OPTIONS', '[**]',
             function () use ($request, $response, $routeKey) {
                 $this->accessControl->assertAccess($routeKey, 'showOptions');
                 return $this->showOptions($request, $response);
