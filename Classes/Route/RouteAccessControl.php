@@ -3,8 +3,6 @@
 namespace RozbehSharahi\Rest3\Route;
 
 use RozbehSharahi\Rest3\Exception;
-use RozbehSharahi\Rest3\Service\ConfigurationService;
-use RozbehSharahi\Rest3\Service\FrontendUserService;
 
 class RouteAccessControl implements RouteAccessControlInterface
 {
@@ -20,32 +18,6 @@ class RouteAccessControl implements RouteAccessControlInterface
     public function injectRouteManager(RouteManagerInterface $routeManager)
     {
         $this->routeManager = $routeManager;
-    }
-
-    /**
-     * @var FrontendUserService
-     */
-    protected $frontendUserService;
-
-    /**
-     * @param FrontendUserService $frontendUserService
-     */
-    public function injectFrontendUserService(FrontendUserService $frontendUserService)
-    {
-        $this->frontendUserService = $frontendUserService;
-    }
-
-    /**
-     * @var ConfigurationService
-     */
-    protected $configurationService;
-
-    /**
-     * @param ConfigurationService $configurationService
-     */
-    public function injectConfigurationService(ConfigurationService $configurationService)
-    {
-        $this->configurationService = $configurationService;
     }
 
     /**

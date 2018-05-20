@@ -16,9 +16,10 @@ interface RouteManagerInterface
      * Gets the Provider for a specific configuration
      *
      * @param string $route
+     * @param string|null $key
      * @return array
      */
-    public function getRouteConfiguration(string $route): array;
+    public function getRouteConfiguration(string $route, string $key = null): array;
 
     /**
      * Checks for existence of a route

@@ -3,6 +3,7 @@
 namespace RozbehSharahi\Rest3\Route;
 
 use RozbehSharahi\Rest3\Service\ConfigurationService;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 
 class RouteManager implements RouteManagerInterface
 {
@@ -32,17 +33,27 @@ class RouteManager implements RouteManagerInterface
 
     /**
      * @param string $route
+     * @param string|null $key
      * @return array
      * @throws \Exception
      */
-    public function getRouteConfiguration(string $route): array
+    public function getRouteConfiguration(string $route, string $key = null): array
     {
-        foreach ($this->getRouteConfigurations() as $routeKey => $routeConfiguration) {
-            if ($route === $routeKey && $this->routeConfigurationIsValid($routeConfiguration)) {
-                return $routeConfiguration;
-            }
+        // Configuration has to exist
+        if (!$this->hasRouteConfiguration($route)) {
+            throw new \Exception('No route configuration for ' . $route);
         }
-        throw new \Exception("Could not find configuration for route: $route");
+
+        $configuration = $this->prepareConfiguration(
+            $this->getRouteConfigurations()[$route]
+        );
+
+        // Configuration must be valid
+        if (!$this->routeConfigurationIsValid($configuration)) {
+            throw new \Exception("Could not find configuration for route: $route");
+        }
+
+        return !$key ? $configuration : ArrayUtility::getValueByPath($configuration, $key, '.');
     }
 
     /**
@@ -53,12 +64,7 @@ class RouteManager implements RouteManagerInterface
      */
     public function hasRouteConfiguration(string $route): bool
     {
-        foreach ($this->getRouteConfigurations() as $routeKey => $routeConfiguration) {
-            if ($route === $routeKey && $this->routeConfigurationIsValid($routeConfiguration)) {
-                return true;
-            }
-        }
-        return false;
+        return !empty($this->getRouteConfigurations()[$route]);
     }
 
     /**
@@ -67,6 +73,22 @@ class RouteManager implements RouteManagerInterface
      */
     protected function routeConfigurationIsValid(array $routeConfiguration): bool
     {
-        return !empty($routeConfiguration['strategy']);
+        return (
+            !empty($routeConfiguration['strategy']) &&
+            (is_null($routeConfiguration['readOnlyProperties']) || is_array($routeConfiguration['readOnlyProperties'])) &&
+            (is_null($routeConfiguration['permissions']) || is_array($routeConfiguration['permissions']))
+        );
     }
+
+    /**
+     * @param $configuration
+     * @return array
+     */
+    protected function prepareConfiguration(array $configuration): array
+    {
+        $configuration['readOnlyProperties'] = $configuration['readOnlyProperties'] ?: [];
+        $configuration['permissions'] = $configuration['permissions'] ?: [];
+        return $configuration;
+    }
+
 }

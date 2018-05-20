@@ -59,20 +59,27 @@ class ModelService implements SingletonInterface
     /**
      * @param DomainObjectInterface $model
      * @param array $requestData
+     * @param array $excludedProperties
      * @return DomainObjectInterface
      * @throws Exception
      */
-    public function writeIntoModelByRequestData(DomainObjectInterface $model, array $requestData): DomainObjectInterface
-    {
+    public function writeIntoModelByRequestData(
+        DomainObjectInterface $model,
+        array $requestData,
+        array $excludedProperties = []
+    ): DomainObjectInterface {
         $modelName = get_class($model);
         $dataMap = $this->dataMapper->getDataMap($modelName);
         $propertyMappingConfiguration = $this->buildPropertyMappingConfiguration();
 
         // Write attributes
         foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
-            if (!ObjectAccess::isPropertySettable($model, $attributeName)) {
+            if ((
+                !ObjectAccess::isPropertySettable($model, $attributeName) ||
+                in_array($attributeName, $excludedProperties)
+            )) {
                 throw Exception::create()
-                    ->addError("Property `$attributeName` does not exist on " . get_class($model));
+                    ->addError("Property `$attributeName` can not be set on " . get_class($model));
             }
             ObjectAccess::setProperty($model, $attributeName, $attributeValue);
         }
@@ -85,9 +92,12 @@ class ModelService implements SingletonInterface
                 throw Exception::create()->addError($attributeName . ' is not of type relation');
             }
 
-            if (!ObjectAccess::isPropertySettable($model, $attributeName)) {
+            if ((
+                !ObjectAccess::isPropertySettable($model, $attributeName) ||
+                in_array($attributeName, $excludedProperties)
+            )) {
                 throw Exception::create()
-                    ->addError("Relation `$attributeName` can not be set throw setter on " . get_class($model));
+                    ->addError("Relation `$attributeName` can not be set on " . get_class($model));
             }
 
             // 1:n

@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\Normalizer\Normalizer;
 use RozbehSharahi\Rest3\Route\RouteAccessControlInterface;
+use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 use RozbehSharahi\Rest3\Service\ModelService;
 use RozbehSharahi\Rest3\Service\RequestService;
 use RozbehSharahi\Rest3\Service\ResponseService;
@@ -25,16 +26,23 @@ class SimpleModelController implements DispatcherInterface
 {
 
     /**
-     * Will hold the full qualified model name
+     * Will be set by dispatch
      *
-     * @var null
+     * @var string
      */
-    protected $modelName = null;
+    protected $routeKey = null;
 
     /**
-     * @var null
+     * Will hold the full qualified model name
+     *
+     * @var string
      */
-    protected $repositoryName = null;
+    protected $modelName;
+
+    /**
+     * @var string
+     */
+    protected $repositoryName;
 
     /**
      * @var RepositoryInterface
@@ -62,7 +70,7 @@ class SimpleModelController implements DispatcherInterface
     /**
      * @param Normalizer $normalizer
      */
-    public function injectRestNormalizer(Normalizer $normalizer)
+    public function injectNormalizer(Normalizer $normalizer)
     {
         $this->normalizer = $normalizer;
     }
@@ -120,6 +128,19 @@ class SimpleModelController implements DispatcherInterface
     }
 
     /**
+     * @var RouteManagerInterface
+     */
+    protected $routeManager;
+
+    /**
+     * @param RouteManagerInterface $routeManager
+     */
+    public function injectRouteManager(RouteManagerInterface $routeManager)
+    {
+        $this->routeManager = $routeManager;
+    }
+
+    /**
      * @var ModelService
      */
     protected $modelService;
@@ -146,8 +167,8 @@ class SimpleModelController implements DispatcherInterface
         ResponseInterface $response,
         string $routeKey = ''
     ): ResponseInterface {
+        $this->routeKey = $routeKey;
         $router = new \AltoRouter();
-
         $this->configureRoutes($request, $response, $routeKey, $router);
 
         // Evaluate the route
@@ -299,7 +320,11 @@ class SimpleModelController implements DispatcherInterface
         $this->assertUpdateRequest($requestData);
 
         // Update
-        $this->modelService->writeIntoModelByRequestData($model, $requestData);
+        $this->modelService->writeIntoModelByRequestData(
+            $model,
+            $requestData,
+            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties')
+        );
 
         $this->getRepository()->update($model);
         $this->persistenceManager->persistAll();
@@ -326,7 +351,11 @@ class SimpleModelController implements DispatcherInterface
         $this->assertUpdateRequest($requestData);
 
         // Write into model
-        $this->modelService->writeIntoModelByRequestData($model, $requestData);
+        $this->modelService->writeIntoModelByRequestData(
+            $model,
+            $requestData,
+            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties')
+        );
 
         $this->getRepository()->add($model);
         $this->persistenceManager->persistAll();

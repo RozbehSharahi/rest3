@@ -266,10 +266,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
                 ]))),
             new Response()
         );
-        self::assertContains(
-            'Property `bla-attribute` does not exist',
-            $response->getBody()->__toString()
-        );
+        self::assertContains('Property `bla-attribute` can not', $response->getBody()->__toString());
     }
 
     /**
@@ -423,14 +420,14 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event'
                         ],
                         'relationships' => [
-                            'locations' => [2,1]
+                            'locations' => [2, 1]
                         ]
                     ]
                 ]))),
             new Response()
         );
 
-        self::assertNotEquals(400,$response->getStatusCode());
+        self::assertNotEquals(400, $response->getStatusCode());
 
         $persistenceManager->clearState();
         /** @var Event $event */
