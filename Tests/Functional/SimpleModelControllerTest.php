@@ -349,6 +349,7 @@ class SimpleModelControllerTest extends FunctionalTestBase
                 'title' => 'A seminar'
             ]
         ]);
+        Exception::setDebugMode(true);
         /** @var RepositoryInterface $repository */
         $repository = $this->getObjectManager()->get(EventRepository::class);
         /** @var PersistenceManager $persistenceManager */
@@ -365,7 +366,11 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event'
                         ],
                         'relationships' => [
-                            'seminar' => 1
+                            'seminar' => [
+                                'data' => [
+                                    'id' => 1
+                                ]
+                            ]
                         ]
                     ]
                 ]))),
@@ -387,7 +392,11 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event (updated)'
                         ],
                         'relationships' => [
-                            'seminar' => 0
+                            'seminar' => [
+                                'data' => [
+                                    'id' => null
+                                ]
+                            ]
                         ]
                     ]
                 ]))),
@@ -453,7 +462,12 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'Created event'
                         ],
                         'relationships' => [
-                            'locations' => [2, 1]
+                            'locations' => [
+                                'data' => [
+                                    ['id' => 2],
+                                    ['id' => 1]
+                                ],
+                            ]
                         ]
                     ]
                 ]))),
@@ -481,7 +495,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
                             'title' => 'An event (updated)'
                         ],
                         'relationships' => [
-                            'locations' => []
+                            'locations' => [
+                                'data' => [],
+                            ]
                         ]
                     ]
                 ]))),

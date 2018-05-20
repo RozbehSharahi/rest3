@@ -73,56 +73,114 @@ class ModelService implements SingletonInterface
         $propertyMappingConfiguration = $this->buildPropertyMappingConfiguration();
 
         // Write attributes
-        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $attributeValue) {
+        foreach ($requestData['data']['attributes'] ?: [] as $attributeName => $relation) {
             if ((
                 !ObjectAccess::isPropertySettable($model, $attributeName) ||
                 in_array($attributeName, $excludedProperties)
             )) {
                 throw Exception::create()
-                    ->addError("Property `$attributeName` can not be set on " . get_class($model));
+                    ->addError("Property `$attributeName` can not be set on " . $modelName);
             }
-            ObjectAccess::setProperty($model, $attributeName, $attributeValue);
+            ObjectAccess::setProperty($model, $attributeName, $relation);
         }
 
         // Write relations
-        foreach ($requestData['data']['relationships'] ?: [] as $attributeName => $attributeValue) {
+        foreach ($requestData['data']['relationships'] ?: [] as $attributeName => $relation) {
             $relationType = $dataMap->getColumnMap($attributeName)->getTypeOfRelation();
 
-            if (is_null($relationType)) {
-                throw Exception::create()->addError($attributeName . ' is not of type relation');
-            }
-
-            if ((
-                !ObjectAccess::isPropertySettable($model, $attributeName) ||
-                in_array($attributeName, $excludedProperties)
-            )) {
-                throw Exception::create()
-                    ->addError("Relation `$attributeName` can not be set on " . get_class($model));
-            }
-
-            // 1:n
-            if ($relationType === ColumnMap::RELATION_HAS_MANY) {
-                throw Exception::create()
-                    ->addError('1:n relation can not be set. Please set by foreign table');
-            }
+            $this->assert(
+                !is_null($relationType),
+                $attributeName . ' is not of type relation'
+            );
+            $this->assert(
+                ObjectAccess::isPropertySettable($model, $attributeName),
+                $attributeName . ' can not be set on' . $modelName
+            );
+            $this->assert(
+                !in_array($attributeName, $excludedProperties),
+                $attributeName . ' can not be set on' . $modelName
+            );
+            $this->assert(
+                $relationType !== ColumnMap::RELATION_HAS_MANY,
+                '1:n relations can not be set. Please set by foreign table'
+            );
 
             // n:1
             if ($relationType === ColumnMap::RELATION_HAS_ONE) {
-                $targetType = $this->dataMapper->getType(get_class($model), $attributeName);
-                $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);
+                $this->assert(
+                    $this->validateHasOneRelation($relation),
+                    "Relation `$attributeName` has invalid format and can not be set"
+                );
+
+                $targetType = $this->dataMapper->getType($modelName, $attributeName);
+                $value = $this->propertyMapper->convert(
+                    $relation['data']['id'],
+                    $targetType,
+                    $propertyMappingConfiguration
+                );
                 ObjectAccess::setProperty($model, $attributeName, $value);
             }
 
             // m:n
             if ($relationType === ColumnMap::RELATION_HAS_AND_BELONGS_TO_MANY) {
-                $itemType = $this->dataMapper->getType(get_class($model), $attributeName);
+                $this->assert(
+                    $this->validateHasManyRelation($relation),
+                    "Relation `$attributeName` has invalid format and can not be set"
+                );
+                $itemType = $this->dataMapper->getType($modelName, $attributeName);
                 $targetType = ObjectStorage::class . '<' . $itemType . '>';
-                $value = $this->propertyMapper->convert($attributeValue, $targetType, $propertyMappingConfiguration);
+                $value = $this->propertyMapper->convert(
+                    array_column($relation['data'], 'id'),
+                    $targetType,
+                    $propertyMappingConfiguration
+                );
                 ObjectAccess::setProperty($model, $attributeName, $value);
             }
         }
 
         return $model;
+    }
+
+    /**
+     * @param array $relation
+     * @return bool
+     */
+    protected function validateHasOneRelation($relation): bool
+    {
+        return (
+            in_array('data', array_keys($relation)) &&
+            in_array('id', array_keys($relation['data']))
+        );
+    }
+
+    /**
+     * @param array $relation
+     * @return bool
+     */
+    protected function validateHasManyRelation($relation): bool
+    {
+        if (!in_array('data', array_keys($relation)) ||
+            !is_array($relation['data']) ||
+            !$this->isNumericArray($relation['data'])) {
+            return false;
+        }
+
+        foreach ($relation['data'] as $pointer) {
+            if (empty($pointer['id']) || is_array($pointer['id'] || is_object($pointer['id']))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $array
+     * @return bool
+     */
+    protected function isNumericArray(array $array): bool
+    {
+        return count(array_filter(array_keys($array), 'is_string')) === 0;
     }
 
     /**
@@ -133,6 +191,18 @@ class ModelService implements SingletonInterface
         /** @var PropertyMappingConfigurationBuilder $builder */
         $builder = $this->objectManager->get(PropertyMappingConfigurationBuilder::class);
         return $builder->build();
+    }
+
+    /**
+     * @param bool $assertion
+     * @param mixed $message
+     * @throws Exception
+     */
+    protected function assert(bool $assertion, $message)
+    {
+        if (!$assertion) {
+            throw Exception::create()->addError($message);
+        }
     }
 
 }
