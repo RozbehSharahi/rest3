@@ -272,6 +272,39 @@ class SimpleModelControllerTest extends FunctionalTestBase
     /**
      * @test
      */
+    public function canSeeErrorOnSettingReadOnlyAttribute()
+    {
+        $this->setUpTestWebsite('
+            plugin.tx_rest3.settings.routes.seminar.readOnlyProperties {
+                1 = title
+            }
+        ');
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'First Seminar',
+            ]
+        ]);
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('PATCH', new Uri('/rest3/seminar/1/')))
+                ->withBody(stream_for(json_encode([
+                    'data' => [
+                        'id' => 1,
+                        'type' => Seminar::class,
+                        'attributes' => [
+                            'title' => 'bla-value'
+                        ]
+                    ]
+                ]))),
+            new Response()
+        );
+        self::assertContains('Property `title` can not', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
     public function canCreate()
     {
         $this->setUpTestWebsite();
