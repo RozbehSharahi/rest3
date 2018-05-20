@@ -11,8 +11,11 @@ plugin.tx_rest3 {
             10 = RozbehSharahi\Rest3\Normalizer\DomainObjectNormalizer
             20 = RozbehSharahi\Rest3\Normalizer\FrontendUserNormalizer
         }
-        additionalHeaders {
+        defaultHeaders {
             Content-Type = application/json
+            Access-Control-Allow-Origin =
+            Access-Control-Allow-Methods = GET,POST,PATCH,OPTIONS,DELETE
+            Access-Control-Allow-Headers = Content-Type
         }
     }
 }

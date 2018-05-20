@@ -24,13 +24,6 @@ class Exception extends \Exception
     /**
      * @var array
      */
-    protected $headers = [
-        'Content-Type' => 'application/json'
-    ];
-
-    /**
-     * @var array
-     */
     protected $errors = [];
 
     /**
@@ -56,7 +49,7 @@ class Exception extends \Exception
      */
     static public function setDebugMode(bool $debugMode)
     {
-        static::$debugMode = true;
+        static::$debugMode = $debugMode;
     }
 
     /**
@@ -77,24 +70,6 @@ class Exception extends \Exception
     public function getStatusCode(): int
     {
         return $this->statusCode;
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
-    /**
-     * @param array $headers
-     * @return Exception
-     */
-    public function setHeaders(array $headers)
-    {
-        $this->headers = $headers;
-        return $this;
     }
 
     /**

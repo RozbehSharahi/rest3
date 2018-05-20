@@ -2,7 +2,6 @@
 
 namespace RozbehSharahi\Rest3;
 
-use Doctrine\Common\Util\Inflector;
 use GuzzleHttp\Psr7\Response;
 use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\ResponseInterface;
@@ -130,7 +129,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
             $restException = Exception::create()->addError('This route does not exists', 404);
             return new Response(
                 $restException->getStatusCode(),
-                array_replace_recursive($restException->getHeaders(), $this->responseService->getAdditionalHeaders()),
+                $this->responseService->getDefaultHeaders(),
                 $restException->getErrorJson()
             );
         }
@@ -147,7 +146,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
         } catch (Exception $restException) {
             return new Response(
                 $restException->getStatusCode(),
-                array_replace_recursive($restException->getHeaders(), $this->responseService->getAdditionalHeaders()),
+                $this->responseService->getDefaultHeaders(),
                 stream_for($restException->getErrorJson())
             );
         }

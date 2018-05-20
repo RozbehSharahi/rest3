@@ -30,28 +30,24 @@ class ResponseService
      */
     public function jsonResponse($data, $statusCode = 200): ResponseInterface
     {
-        $headers = [
-            'Content-Type' => 'application/json'
-        ];
-
-        foreach ($this->getAdditionalHeaders() as $key => $value) {
-            $headers[$key] = $value;
-        }
-
-        return new Response($statusCode, $headers, stream_for(json_encode($data)));
+        return new Response(
+            $statusCode,
+            $this->getDefaultHeaders(),
+            stream_for(json_encode($data))
+        );
     }
 
     /**
      * @return array
      * @throws \Exception
      */
-    public function getAdditionalHeaders(): array
+    public function getDefaultHeaders(): array
     {
-        $additionalHeaders = $this->configurationService->getSetting('additionalHeaders') ?: [];
-        if (!is_null($additionalHeaders) && !is_array($additionalHeaders)) {
-            throw new \Exception('Bad configuration for additionalHeaders');
+        $defaultHeaders = $this->configurationService->getSetting('defaultHeaders');
+        if (!is_null($defaultHeaders) && !is_array($defaultHeaders)) {
+            throw new \Exception('Bad configuration for defaultHeaders');
         }
-        return $additionalHeaders;
+        return $defaultHeaders;
     }
 
 }
