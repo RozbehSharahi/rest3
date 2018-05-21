@@ -18,6 +18,8 @@ plugin.tx_rest3 {
             Access-Control-Allow-Headers = Content-Type
         }
         # Will cause relations only to be saved when send with an include statement as well
-        safeRelationWriteMode = 0
+        safeModes {
+            setRelations = 1
+        }
     }
 }

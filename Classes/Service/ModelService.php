@@ -105,7 +105,7 @@ class ModelService implements SingletonInterface
 
             // Safe mode
             if((
-                $this->configurationService->getSetting('safeRelationWriteMode') &&
+                $this->configurationService->getSetting('safeModes.setRelations') &&
                 !in_array($attributeName,$include)
             )) {
                 continue;

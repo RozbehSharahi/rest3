@@ -359,6 +359,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
         $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
         $dispatcher->dispatch(
             (new ServerRequest('POST', new Uri('/rest3/event/')))
+                ->withQueryParams([
+                    'include' => 'seminar'
+                ])
                 ->withBody(stream_for(json_encode([
                     'data' => [
                         'type' => Event::class,
@@ -385,6 +388,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
 
         $dispatcher->dispatch(
             (new ServerRequest('PATCH', new Uri('/rest3/event/1')))
+                ->withQueryParams([
+                    'include' => 'seminar'
+                ])
                 ->withBody(stream_for(json_encode([
                     'data' => [
                         'type' => Event::class,
@@ -455,6 +461,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
         $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
         $response = $dispatcher->dispatch(
             (new ServerRequest('POST', new Uri('/rest3/event/')))
+                ->withQueryParams([
+                    'include' => 'locations'
+                ])
                 ->withBody(stream_for(json_encode([
                     'data' => [
                         'type' => Event::class,
@@ -488,6 +497,9 @@ class SimpleModelControllerTest extends FunctionalTestBase
 
         $dispatcher->dispatch(
             (new ServerRequest('PATCH', new Uri('/rest3/event/1')))
+                ->withQueryParams([
+                    'include' => 'locations'
+                ])
                 ->withBody(stream_for(json_encode([
                     'data' => [
                         'type' => Event::class,
