@@ -2,11 +2,11 @@
 
 namespace RozbehSharahi\Rexample\Controller;
 
-use RozbehSharahi\Rest3\Controller\SimpleModelController;
+use RozbehSharahi\Rest3\Controller\DomainObjectController;
 use RozbehSharahi\Rexample\Domain\Model\Seminar;
 use RozbehSharahi\Rexample\Domain\Repository\SeminarRepository;
 
-class SeminarController extends SimpleModelController
+class SeminarController extends DomainObjectController
 {
 
     /**

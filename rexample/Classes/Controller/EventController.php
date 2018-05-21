@@ -2,11 +2,11 @@
 
 namespace RozbehSharahi\Rexample\Controller;
 
-use RozbehSharahi\Rest3\Controller\SimpleModelController;
+use RozbehSharahi\Rest3\Controller\DomainObjectController;
 use RozbehSharahi\Rexample\Domain\Model\Event;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
 
-class EventController extends SimpleModelController
+class EventController extends DomainObjectController
 {
 
     /**
