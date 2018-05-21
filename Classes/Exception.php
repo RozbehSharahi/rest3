@@ -90,6 +90,14 @@ class Exception extends \Exception
     }
 
     /**
+     * @return array
+     */
+    public function getPayload()
+    {
+        return ['errors' => $this->getErrors()];
+    }
+
+    /**
      * @param string $detail
      * @param int $status
      * @return $this

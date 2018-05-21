@@ -31,6 +31,19 @@ class ModelService implements SingletonInterface
     }
 
     /**
+     * @var ConfigurationService
+     */
+    protected $configurationService;
+
+    /**
+     * @param ConfigurationService $configurationService
+     */
+    public function injectConfigurationService(ConfigurationService $configurationService)
+    {
+        $this->configurationService = $configurationService;
+    }
+
+    /**
      * @var PropertyMapper
      */
     protected $propertyMapper;
@@ -60,13 +73,15 @@ class ModelService implements SingletonInterface
      * @param DomainObjectInterface $model
      * @param array $requestData
      * @param array $excludedProperties
+     * @param array $include
      * @return DomainObjectInterface
      * @throws Exception
      */
     public function writeIntoModelByRequestData(
         DomainObjectInterface $model,
         array $requestData,
-        array $excludedProperties = []
+        array $excludedProperties = [],
+        array $include = []
     ): DomainObjectInterface {
         $modelName = get_class($model);
         $dataMap = $this->dataMapper->getDataMap($modelName);
@@ -87,6 +102,14 @@ class ModelService implements SingletonInterface
         // Write relations
         foreach ($requestData['data']['relationships'] ?: [] as $attributeName => $relation) {
             $relationType = $dataMap->getColumnMap($attributeName)->getTypeOfRelation();
+
+            // Safe mode
+            if((
+                $this->configurationService->getSetting('safeRelationWriteMode') &&
+                !in_array($attributeName,$include)
+            )) {
+                continue;
+            }
 
             $this->assert(
                 !is_null($relationType),

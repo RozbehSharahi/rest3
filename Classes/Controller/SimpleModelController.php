@@ -323,7 +323,8 @@ class SimpleModelController implements DispatcherInterface
         $this->modelService->writeIntoModelByRequestData(
             $model,
             $requestData,
-            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties')
+            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties'),
+            $this->requestService->getIncludes($request)
         );
 
         $this->getRepository()->update($model);
@@ -354,7 +355,8 @@ class SimpleModelController implements DispatcherInterface
         $this->modelService->writeIntoModelByRequestData(
             $model,
             $requestData,
-            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties')
+            $this->routeManager->getRouteConfiguration($this->routeKey, 'readOnlyProperties'),
+            $this->requestService->getIncludes($request)
         );
 
         $this->getRepository()->add($model);

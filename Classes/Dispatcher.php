@@ -2,8 +2,6 @@
 
 namespace RozbehSharahi\Rest3;
 
-use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Authentication\TokenManagerInterface;
@@ -108,29 +106,17 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      */
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response)
     {
-        $response = $this->run($request, $response);
-        return $response;
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @return Response|ResponseInterface|static
-     */
-    protected function run(ServerRequestInterface $request, ResponseInterface $response)
-    {
-        if ($this->isRestRootCall($request)) {
-            return $response->withBody(stream_for('Welcome to Rest3'));
-        }
-
         $this->authenticate($request);
 
+        if ($this->isRestRootCall($request)) {
+            return $this->responseService->jsonResponse('Welcome to Rest3');
+        }
+
         if (!$this->routeManager->hasRouteConfiguration($this->requestService->getRouteKey($request))) {
-            $restException = Exception::create()->addError('This route does not exists', 404);
-            return new Response(
-                $restException->getStatusCode(),
-                $this->responseService->getDefaultHeaders(),
-                $restException->getErrorJson()
+            $restException = Exception::create()->addError('This route does not exist', 404);
+            return $this->responseService->jsonResponse(
+                $restException->getPayload(),
+                $restException->getStatusCode()
             );
         }
 
@@ -144,10 +130,9 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
                 [$request, $response, $this->requestService->getRouteKey($request)]
             );
         } catch (Exception $restException) {
-            return new Response(
-                $restException->getStatusCode(),
-                $this->responseService->getDefaultHeaders(),
-                stream_for($restException->getErrorJson())
+            return $this->responseService->jsonResponse(
+                $restException->getPayload(),
+                $restException->getStatusCode()
             );
         }
     }
