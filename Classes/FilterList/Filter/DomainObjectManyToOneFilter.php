@@ -4,7 +4,7 @@ namespace RozbehSharahi\Rest3\FilterList\Filter;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 
-class DomainObjectHasOneFilter implements FilterInterface
+class DomainObjectManyToOneFilter implements FilterInterface
 {
 
     use FilterTrait;

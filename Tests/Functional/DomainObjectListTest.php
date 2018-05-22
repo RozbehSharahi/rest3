@@ -4,7 +4,7 @@ namespace TYPO3\CMS\Core\Tests\Functional;
 
 use RozbehSharahi\Rest3\FilterList\DomainObjectList;
 use RozbehSharahi\Rest3\FilterList\Filter\DomainObjectAttributeFilter;
-use RozbehSharahi\Rest3\FilterList\Filter\DomainObjectHasOneFilter;
+use RozbehSharahi\Rest3\FilterList\Filter\DomainObjectManyToOneFilter;
 use RozbehSharahi\Rest3\Tests\Functional\FunctionalTestBase;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
@@ -89,7 +89,7 @@ class DomainObjectListTest extends FunctionalTestBase
                 'title'
             ),
             'seminar' => $this->getObjectManager()->get(
-                DomainObjectHasOneFilter::class,
+                DomainObjectManyToOneFilter::class,
                 'seminar',
                 'tx_rexample_domain_model_seminar',
                 'title'
