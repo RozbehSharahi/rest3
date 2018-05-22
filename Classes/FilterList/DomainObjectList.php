@@ -175,7 +175,7 @@ class DomainObjectList implements FilterListInterface
         // get items
         $query = $this->createFilterQuery();
         $mainAlias = $query->getQueryPart('from')['0']['alias'];
-        $items = $query->select(["$mainAlias.uid"])->execute()->fetchAll();
+        $items = $query->select(["$mainAlias.uid"])->groupBy(["$mainAlias.uid"])->execute()->fetchAll();
 
         // get filter items
         $filterItems = [];
