@@ -2,7 +2,7 @@
 
 return [
     'ctrl' => [
-        'title' => 'Rexample Event',
+        'title' => 'Rexample Topic',
         'label' => 'title',
         'hideAtCopy' => true,
         'tstamp' => 'tstamp',
@@ -23,7 +23,7 @@ return [
         ],
     ],
     'types' => array(
-        '0' => array('showitem' => 'title,seminar, locations, topics, sys_language_uid, l10n_parent, l10n_diffsource')
+        '0' => array('showitem' => 'title,event, sys_language_uid, l10n_parent, l10n_diffsource')
     ),
     'columns' => [
         'sys_language_uid' => [
@@ -53,8 +53,8 @@ return [
                 'items' => [
                     ['', 0],
                 ],
-                'foreign_table' => 'tx_rexample_domain_model_event',
-                'foreign_table_where' => 'AND tx_rexample_domain_model_event.pid=###CURRENT_PID### AND tx_rexample_domain_model_event.sys_language_uid IN (-1,0)',
+                'foreign_table' => 'tx_rexample_domain_model_topic',
+                'foreign_table_where' => 'AND tx_rexample_domain_model_topic.pid=###CURRENT_PID### AND tx_rexample_domain_model_topic.sys_language_uid IN (-1,0)',
                 'fieldWizard' => [
                     'selectIcons' => [
                         'disabled' => true,
@@ -89,17 +89,17 @@ return [
                 'type' => 'input'
             ]
         ],
-        'seminar' => [
+        'event' => [
             'exclude' => true,
-            'label' => 'Seminar',
+            'label' => 'Event',
             'config' => [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'items' => [
                     ['', 0],
                 ],
-                'foreign_table' => 'tx_rexample_domain_model_seminar',
-                'foreign_table_where' => 'AND tx_rexample_domain_model_seminar.pid=###CURRENT_PID### AND tx_rexample_domain_model_seminar.sys_language_uid IN (-1,0)',
+                'foreign_table' => 'tx_rexample_domain_model_event',
+                'foreign_table_where' => 'AND tx_rexample_domain_model_event.pid=###CURRENT_PID### AND tx_rexample_domain_model_event.sys_language_uid IN (-1,0)',
                 'fieldWizard' => [
                     'selectIcons' => [
                         'disabled' => true,
@@ -108,34 +108,5 @@ return [
                 'default' => 0,
             ]
         ],
-        'locations' => array(
-            'exclude' => 1,
-            'label' => 'Events',
-            'config' => array(
-                'type' => 'select',
-                'multiple' => 1,
-                'foreign_table' => 'tx_rexample_domain_model_location',
-                'MM' => 'tx_rexample_location_event_mm',
-                'foreign_table_where' => ' AND tx_rexample_domain_model_location.pid=###CURRENT_PID### ORDER BY tx_rexample_domain_model_location.title ',
-                'MM_opposite_field' => 'events',
-                'minitems' => 0,
-                'maxitems' => 99,
-            ),
-        ),
-        'topics' => array(
-            'exclude' => 1,
-            'label' => 'Topics',
-            'config' => array(
-                'type' => 'inline',
-                'multiple' => 1,
-                'foreign_table' => 'tx_rexample_domain_model_topic',
-                'foreign_field' => 'event',
-                'maxitems' => 100,
-                'appearance' => [
-                    'collapseAll' => 1,
-                    'expandSingle' => 1,
-                ],
-            ),
-        ),
     ]
 ];
