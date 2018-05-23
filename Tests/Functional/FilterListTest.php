@@ -2,6 +2,7 @@
 
 namespace TYPO3\CMS\Core\Tests\Functional;
 
+use RozbehSharahi\Rest3\FilterList\Filter\FilterInterface;
 use RozbehSharahi\Rest3\FilterList\Filter\ManyToManyFilter;
 use RozbehSharahi\Rest3\FilterList\FilterList;
 use RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter;
@@ -9,6 +10,8 @@ use RozbehSharahi\Rest3\FilterList\Filter\ManyToOneFilter;
 use RozbehSharahi\Rest3\FilterList\Filter\OneToManyFilter;
 use RozbehSharahi\Rest3\Tests\Functional\FunctionalTestBase;
 use RozbehSharahi\Rexample\Domain\Repository\EventRepository;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
 
@@ -116,23 +119,32 @@ class FilterListTest extends FunctionalTestBase
         /** @var RepositoryInterface $seminarRepository */
         $seminarRepository = $this->getObjectManager()->get(EventRepository::class);
 
+        /**
+         * @param string $className
+         * @return FilterInterface|object
+         */
+        function getFilter(string $className): FilterInterface
+        {
+            return GeneralUtility::makeInstance(ObjectManager::class)->get($className);
+        }
+
         /** @var FilterList $list */
         $list = $this->getObjectManager()->get(FilterList::class, [
-            'title' => (new AttributeFilter())->setConfiguration([
+            'title' => getFilter(AttributeFilter::class)->setConfiguration([
                 'propertyName' => 'title'
             ]),
-            'seminar' => (new ManyToOneFilter())->setConfiguration([
+            'seminar' => getFilter(ManyToOneFilter::class)->setConfiguration([
                 'propertyName' => 'seminar',
                 'foreignTable' => 'tx_rexample_domain_model_seminar',
                 'foreignLabel' => 'title'
             ]),
-            'topic' => (new OneToManyFilter())->setConfiguration([
+            'topic' => getFilter(OneToManyFilter::class)->setConfiguration([
                 'propertyName' => 'topics',
                 'foreignTable' => 'tx_rexample_domain_model_topic',
                 'foreignField' => 'event',
                 'foreignLabel' => 'title'
             ]),
-            'location' => (new ManyToManyFilter())->setConfiguration([
+            'location' => getFilter(ManyToManyFilter::class)->setConfiguration([
                 'propertyName' => 'locations',
                 'foreignTable' => 'tx_rexample_domain_model_location',
                 'relationTable' => 'tx_rexample_location_event_mm',
