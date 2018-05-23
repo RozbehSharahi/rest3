@@ -4,7 +4,7 @@ namespace RozbehSharahi\Rest3\FilterList\Filter;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 
-class DomainObjectManyToOneFilter implements FilterInterface
+class ManyToOneFilter implements FilterInterface
 {
 
     use FilterTrait;
@@ -73,25 +73,21 @@ class DomainObjectManyToOneFilter implements FilterInterface
     protected function getItems(QueryBuilder $query): array
     {
         $mainAlias = $this->getMainAlias($query);
-        $query->select([
-            "$mainAlias.$this->propertyName as identification",
-            "$this->foreignTable.$this->foreignLabel as value",
-        ]);
-
-        // only join if not already there
-        if (!$this->hasJoin($query, $this->foreignTable)) {
-            $query->leftJoin(
-                "`$mainAlias`",
+        $mainTable = $this->getMainTable($query);
+        return (clone $query)
+            ->resetQueryParts()
+            ->from($mainTable, 'counter')
+            ->select(["counter.$this->propertyName as identification", "counter_foreign.$this->foreignLabel as label"])
+            ->innerJoin(
+                "counter",
                 $this->foreignTable,
-                $this->foreignTable,
-                "$mainAlias.$this->propertyName=$this->foreignTable.uid"
-            );
-        }
-
-        $query->groupBy(["identification"]);
-        return array_filter($query->execute()->fetchAll(), function ($item) {
-            return !empty($item['value']);
-        });
+                "counter_foreign",
+                "counter.$this->propertyName=counter_foreign.uid"
+            )
+            ->where($query->expr()->in("counter.uid", $query->select(["$mainAlias.uid"])->getSQL()))
+            ->groupBy(["identification"])
+            ->execute()
+            ->fetchAll();
     }
 
     /**
@@ -101,26 +97,21 @@ class DomainObjectManyToOneFilter implements FilterInterface
     protected function getCounts(QueryBuilder $query): array
     {
         $mainAlias = $this->getMainAlias($query);
-        $query->select([
-            "$mainAlias.$this->propertyName as identification",
-            "$this->foreignTable.$this->foreignLabel as value",
-            "count(*) as count"
-        ]);
-
-        // only join if not already there
-        if (!$this->hasJoin($query, $this->foreignTable)) {
-            $query->leftJoin(
-                "`$mainAlias`",
+        $mainTable = $this->getMainTable($query);
+        return (clone $query)
+            ->resetQueryParts()
+            ->from($mainTable, 'counter')
+            ->select(["counter.$this->propertyName as identification", "count(*) as count"])
+            ->innerJoin(
+                "counter",
                 $this->foreignTable,
-                $this->foreignTable,
-                "$mainAlias.$this->propertyName=$this->foreignTable.uid"
-            );
-        }
-
-        $query->groupBy(["identification"]);
-        return array_filter($query->execute()->fetchAll(), function ($item) {
-            return !empty($item['value']);
-        });
+                "counter_foreign",
+                "counter.$this->propertyName=counter_foreign.uid"
+            )
+            ->where($query->expr()->in("counter.uid", $query->select(["$mainAlias.uid"])->getSQL()))
+            ->groupBy(["identification"])
+            ->execute()
+            ->fetchAll();
     }
 
 }

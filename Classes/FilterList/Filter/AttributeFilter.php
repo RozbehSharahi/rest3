@@ -4,7 +4,7 @@ namespace RozbehSharahi\Rest3\FilterList\Filter;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 
-class DomainObjectAttributeFilter implements FilterInterface
+class AttributeFilter implements FilterInterface
 {
 
     use FilterTrait;
@@ -63,9 +63,9 @@ class DomainObjectAttributeFilter implements FilterInterface
         $mainAlias = $this->getMainAlias($baseQuery);
         $baseQuery->select([
             "$mainAlias.$this->propertyName as identification",
-            "$mainAlias.$this->propertyName as value"
+            "$mainAlias.$this->propertyName as label"
         ]);
-        $baseQuery->groupBy("value");
+        $baseQuery->groupBy("identification");
         return $baseQuery->execute()->fetchAll();
     }
 
@@ -76,12 +76,15 @@ class DomainObjectAttributeFilter implements FilterInterface
     protected function getCounts(QueryBuilder $query): array
     {
         $mainAlias = $this->getMainAlias($query);
-        $query->select([
-            "$mainAlias.$this->propertyName as identification",
-            "count(*) as count"
-        ]);
-        $query->groupBy(['identification']);
-        return $query->execute()->fetchAll();
+        $mainTable = $this->getMainTable($query);
+        return (clone $query)
+            ->resetQueryParts()
+            ->from($mainTable, 'counter')
+            ->select(["counter.$this->propertyName as identification", "count(*) as count"])
+            ->where($query->expr()->in("counter.uid", $query->select(["$mainAlias.uid"])->getSQL()))
+            ->groupBy(["identification"])
+            ->execute()
+            ->fetchAll();
     }
 
 }

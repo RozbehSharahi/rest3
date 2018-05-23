@@ -7,7 +7,7 @@ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\Storage\Typo3DbQueryParser;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 
-class DomainObjectList implements FilterListInterface
+class FilterList implements FilterListInterface
 {
 
     /**
@@ -187,7 +187,7 @@ class DomainObjectList implements FilterListInterface
             );
         }
 
-        return (new DomainObjectListResult())
+        return (new FilterListResult())
             ->setFilterItems($filterItems)
             ->setItems($items);
     }
@@ -195,11 +195,15 @@ class DomainObjectList implements FilterListInterface
     /**
      * @param array $excludedFilters
      * @return \Doctrine\DBAL\Query\QueryBuilder
+     * @throws \Exception
      */
     protected function createFilterQuery(array $excludedFilters = []): \Doctrine\DBAL\Query\QueryBuilder
     {
         $query = clone $this->baseQuery;
         foreach (array_filter($this->filters) as $index => $values) {
+            if(is_null($this->filterSet[$index])) {
+                throw new \Exception("`$index` does not exist in filter set");
+            }
             if (!in_array($index, $excludedFilters)) {
                 $query = $this->filterSet[$index]->addFilter($query, $values);
             }

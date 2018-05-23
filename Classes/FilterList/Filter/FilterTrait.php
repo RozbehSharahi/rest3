@@ -17,6 +17,15 @@ trait FilterTrait
 
     /**
      * @param QueryBuilder $query
+     * @return string
+     */
+    protected function getMainTable(QueryBuilder $query): string
+    {
+        return trim($query->getQueryPart('from')[0]['table'], '`');
+    }
+
+    /**
+     * @param QueryBuilder $query
      * @param string $tableName
      * @return bool
      */

@@ -2,7 +2,7 @@
 
 namespace RozbehSharahi\Rest3\FilterList;
 
-class DomainObjectListResult implements FilterListResultInterface
+class FilterListResult implements FilterListResultInterface
 {
 
     /**
