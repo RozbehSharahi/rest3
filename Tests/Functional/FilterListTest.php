@@ -176,12 +176,12 @@ class FilterListTest extends FunctionalTestBase
                 'title' => ['Event 1']
             ]);
         $result = $list->execute();
-        self::assertEquals(1, count($result->getItems()));
-        self::assertCount(7, $result->getFilterItems()['title']);
-        self::assertEquals(2, $this->find($result->getFilterItems()['title'], function ($item) {
+        self::assertEquals(1, count($result['items']));
+        self::assertCount(7, $result['filterItems']['title']);
+        self::assertEquals(2, $this->find($result['filterItems']['title'], function ($item) {
             return $item['identification'] === 'Event Last';
         })['count']);
-        self::assertCount(4, $result->getFilterItems()['seminar']);
+        self::assertCount(4, $result['filterItems']['seminar']);
 
         $list
             ->resetSettings()
@@ -191,9 +191,9 @@ class FilterListTest extends FunctionalTestBase
                 'topic' => [1, 2, 3],
             ]);
         $result = $list->execute();
-        self::assertEquals(2, count($result->getItems()));
-        self::assertEquals(3, count($result->getFilterItems()['topic']));
-        self::assertCount(1, array_filter($result->getFilterItems()['seminar'], function ($item) {
+        self::assertEquals(2, count($result['items']));
+        self::assertEquals(3, count($result['filterItems']['topic']));
+        self::assertCount(1, array_filter($result['filterItems']['seminar'], function ($item) {
             return $item['count'] > 0;
         }));
 

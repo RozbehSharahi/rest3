@@ -2,16 +2,31 @@
 
 namespace RozbehSharahi\Rest3\FilterList;
 
+use Doctrine\DBAL\Query\QueryBuilder;
+
 interface FilterListInterface
 {
 
-    public function resetSettings(): FilterListInterface;
+    /**
+     * @return QueryBuilder
+     */
+    public function getQuery(): QueryBuilder;
+
+    /**
+     * @return array
+     */
+    public function getFilterItems(): array;
 
     /**
      * @param mixed $baseQuery
      * @return FilterListInterface
      */
     public function setBaseQuery($baseQuery): FilterListInterface;
+
+    /**
+     * @return FilterListInterface
+     */
+    public function resetSettings(): FilterListInterface;
 
     /**
      * @param array $filterSet
@@ -34,32 +49,5 @@ interface FilterListInterface
      * @return array
      */
     public function getFilters(): array;
-
-    /**
-     * @param int $page
-     * @return FilterListInterface
-     */
-    public function setPage(int $page): FilterListInterface;
-
-    /**
-     * @return int
-     */
-    public function getPage(): int;
-
-    /**
-     * @param int $pageSize
-     * @return FilterListInterface
-     */
-    public function setPageSize(int $pageSize): FilterListInterface;
-
-    /**
-     * @return int
-     */
-    public function getPageSize(): int;
-
-    /**
-     * @return FilterListResultInterface
-     */
-    public function execute(): FilterListResultInterface;
 
 }
