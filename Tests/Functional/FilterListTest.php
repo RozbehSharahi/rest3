@@ -257,7 +257,7 @@ class FilterListTest extends FunctionalTestBase
         $result = json_decode($response->getBody(), true);
         self::assertEquals(200, $response->getStatusCode());
         self::assertNotEmpty($result['meta']);
-        self::assertNotEmpty($result['meta']['filterItems']);
+        self::assertNotEmpty($result['meta']['filter']['items']);
         self::assertEquals('Seminar 1', $result['data'][0]['attributes']['title']);
         self::assertCount(1, $result['data']);
         self::assertCount(2, $result['included']);

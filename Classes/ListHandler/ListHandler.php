@@ -121,7 +121,7 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
 
         return $this->responseService->jsonResponse(
             array_replace_recursive(
-                ['meta' => ['filterItems' => $filterList->getFilterItems()]],
+                ['meta' => ['filter' => ['items' => $filterList->getFilterItems()]]],
                 $this->normalizer->normalize($domainObjects, $this->requestService->getIncludes($request))
             )
         );
