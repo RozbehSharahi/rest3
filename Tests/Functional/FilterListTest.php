@@ -210,20 +210,7 @@ class FilterListTest extends FunctionalTestBase
     public function canSeeListOnJsonApi()
     {
         Exception::setDebugMode(true);
-        $this->setUpTestWebsite('
-            plugin.tx_rest3.settings.routes.seminar.listHandler {
-                className = RozbehSharahi\Rest3\ListHandler\ListHandler
-                methodName = dispatch
-                filterSets {
-                     mySet {
-                        title {
-                            className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
-                            propertyName = title
-                        }
-                    }
-                }
-            }
-        ');
+        $this->setUpTestWebsite();
 
         $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
             [
@@ -260,6 +247,9 @@ class FilterListTest extends FunctionalTestBase
                     '_listHandler' => [
                         'filterSet' => 'mySet'
                     ],
+                    'filter' => [
+                        'title' => 'Seminar 1',
+                    ],
                     'include' => 'events'
                 ]),
             new Response()
@@ -269,8 +259,8 @@ class FilterListTest extends FunctionalTestBase
         self::assertNotEmpty($result['meta']);
         self::assertNotEmpty($result['meta']['filterItems']);
         self::assertEquals('Seminar 1', $result['data'][0]['attributes']['title']);
-        self::assertCount(3, $result['data']);
-        self::assertCount(3, $result['included']);
+        self::assertCount(1, $result['data']);
+        self::assertCount(2, $result['included']);
     }
 
     /**

@@ -111,12 +111,13 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         $filterList = $this->objectManager->get(FilterListInterface::class);
         $filterList
             ->setBaseQuery($this->getBaseQuery())
-            ->setFilterSet($this->getFilterSet($parameters['filterSet']));
+            ->setFilterSet($this->getFilterSet($parameters['filterSet']))
+            ->setFilters($this->getFilters($request));
         $ids = array_column($filterList->getQuery()->execute()->fetchAll(), 'uid');
 
         $query = $this->getRepository()->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        $domainObjects = $query->matching($query->in('uid', $ids))->execute();
+        $domainObjects = !empty($ids) ? $query->matching($query->in('uid', $ids))->execute() : [];
 
         return $this->responseService->jsonResponse(
             array_replace_recursive(
@@ -137,7 +138,7 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         $filterConfiguration = $this->routeManager
             ->getRouteConfiguration($this->routeKey, "listHandler.filterSets.$filterSetName");
 
-        $this->assert(is_array($filterConfiguration), "Wrong configuration for filter set $filterSetName");
+        $this->assert(is_array($filterConfiguration), "Wrong configuration for filter-set `$filterSetName`");
 
         foreach ($filterConfiguration as $name => $configuration) {
             $filter = $configuration['className'];
@@ -172,6 +173,22 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         $query = $this->getRepository()->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
         return $query;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return array
+     */
+    public function getFilters(ServerRequestInterface $request): array
+    {
+        $filters = $request->getQueryParams()['filter'] ?: [];
+        $this->assert(is_array($filters), 'Filter parameter (?filter[attribute]=...) must be of type array');
+        foreach ($filters as $index => $filter) {
+            if (is_string($filter)) {
+                $filters[$index] = [$filter];
+            }
+        }
+        return $filters;
     }
 
     /**
