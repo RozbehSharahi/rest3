@@ -6,6 +6,30 @@ use Doctrine\DBAL\Query\QueryBuilder;
 
 trait FilterTrait
 {
+
+    /**
+     * @param array $configuration
+     * @return FilterInterface
+     */
+    public function setConfiguration(array $configuration): FilterInterface
+    {
+        // validate configuration
+        foreach ($this->configurationProperties as $name) {
+            $this->assert($configuration[$name], "Property `$name` configuration was not set for " . static::class);
+            $this->assert(property_exists($this, $name), "Property `$name` does not exist on " . static::class);
+        }
+
+        // set configuration to properties
+        foreach ($configuration as $attribute => $value) {
+            $this->assertConfigurationProperty($attribute);
+            $this->{$attribute} = $value;
+        }
+
+        /** @var FilterInterface $filterInterface */
+        $filterInterface = $this;
+        return $filterInterface;
+    }
+
     /**
      * @param QueryBuilder $query
      * @return string
@@ -54,6 +78,29 @@ trait FilterTrait
             $items[$index]['count'] = $count['count'] ?: 0;
         }
         return $items;
+    }
+
+    /**
+     * @param bool $assertion
+     * @param mixed $message
+     * @throws \Exception
+     */
+    protected function assert($assertion, $message)
+    {
+        if (!$assertion) {
+            throw new \Exception($message);
+        }
+    }
+
+    /**
+     * @param string $attribute
+     */
+    protected function assertConfigurationProperty(string $attribute): void
+    {
+        $this->assert(
+            in_array($attribute, $this->configurationProperties),
+            "Property `$attribute` is not allowed on " . static::class
+        );
     }
 
 }

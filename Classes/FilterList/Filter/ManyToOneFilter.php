@@ -10,6 +10,11 @@ class ManyToOneFilter implements FilterInterface
     use FilterTrait;
 
     /**
+     * @var array
+     */
+    protected $configurationProperties = ['propertyName', 'foreignTable', 'foreignLabel'];
+
+    /**
      * @var string
      */
     protected $propertyName;
@@ -23,19 +28,6 @@ class ManyToOneFilter implements FilterInterface
      * @var string
      */
     protected $foreignLabel;
-
-    /**
-     * DomainObjectHasOneFilter constructor.
-     * @param string $propertyName
-     * @param string $foreignTable
-     * @param string $foreignLabel
-     */
-    public function __construct(string $propertyName, string $foreignTable, string $foreignLabel)
-    {
-        $this->propertyName = $propertyName;
-        $this->foreignTable = $foreignTable;
-        $this->foreignLabel = $foreignLabel;
-    }
 
     /**
      * @param QueryBuilder $query

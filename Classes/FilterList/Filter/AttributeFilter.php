@@ -10,18 +10,14 @@ class AttributeFilter implements FilterInterface
     use FilterTrait;
 
     /**
+     * @var array
+     */
+    protected $configurationProperties = ['propertyName'];
+
+    /**
      * @var string
      */
     protected $propertyName;
-
-    /**
-     * DomainObjectAttributeFilter constructor.
-     * @param string $propertyName
-     */
-    public function __construct(string $propertyName)
-    {
-        $this->propertyName = $propertyName;
-    }
 
     /**
      * @param QueryBuilder $query

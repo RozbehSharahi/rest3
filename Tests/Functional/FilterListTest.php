@@ -118,23 +118,28 @@ class FilterListTest extends FunctionalTestBase
 
         /** @var FilterList $list */
         $list = $this->getObjectManager()->get(FilterList::class, [
-            'title' => $this->getObjectManager()->get(
-                AttributeFilter::class, 'title'
-            ),
-            'seminar' => $this->getObjectManager()->get(
-                ManyToOneFilter::class, 'seminar', 'tx_rexample_domain_model_seminar', 'title'
-            ),
-            'topic' => $this->getObjectManager()->get(
-                OneToManyFilter::class, 'topics', 'tx_rexample_domain_model_topic', 'event', 'title'
-            ),
-            'location' => $this->getObjectManager()->get(
-                ManyToManyFilter::class, 'locations',
-                'tx_rexample_domain_model_location',
-                'tx_rexample_location_event_mm',
-                'uid_foreign',
-                'uid_local',
-                'title'
-            )
+            'title' => (new AttributeFilter())->setConfiguration([
+                'propertyName' => 'title'
+            ]),
+            'seminar' => (new ManyToOneFilter())->setConfiguration([
+                'propertyName' => 'seminar',
+                'foreignTable' => 'tx_rexample_domain_model_seminar',
+                'foreignLabel' => 'title'
+            ]),
+            'topic' => (new OneToManyFilter())->setConfiguration([
+                'propertyName' => 'topics',
+                'foreignTable' => 'tx_rexample_domain_model_topic',
+                'foreignField' => 'event',
+                'foreignLabel' => 'title'
+            ]),
+            'location' => (new ManyToManyFilter())->setConfiguration([
+                'propertyName' => 'locations',
+                'foreignTable' => 'tx_rexample_domain_model_location',
+                'relationTable' => 'tx_rexample_location_event_mm',
+                'relationTableLocalField' => 'uid_foreign',
+                'relationTableForeignField' => 'uid_local',
+                'foreignLabel' => 'title'
+            ]),
         ]);
 
         $baseQuery = $seminarRepository->createQuery();
@@ -170,7 +175,7 @@ class FilterListTest extends FunctionalTestBase
             ->resetSettings()
             ->setBaseQuery($baseQuery)
             ->setFilters([
-                'title' => ['Event 2','Event 1'],
+                'title' => ['Event 2', 'Event 1'],
                 'topic' => [1, 2, 3],
             ]);
         $result = $list->execute();

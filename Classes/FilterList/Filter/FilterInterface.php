@@ -8,6 +8,12 @@ interface FilterInterface
 {
 
     /**
+     * @param array $configuration
+     * @return FilterInterface
+     */
+    public function setConfiguration(array $configuration): FilterInterface;
+
+    /**
      * @param QueryBuilder $query
      * @param array $values
      * @return QueryBuilder Will be used to continue query filtering

@@ -10,6 +10,18 @@ class ManyToManyFilter implements FilterInterface
     use FilterTrait;
 
     /**
+     * @var array
+     */
+    protected $configurationProperties = [
+        'propertyName',
+        'foreignTable',
+        'foreignLabel',
+        'relationTable',
+        'relationTableLocalField',
+        'relationTableForeignField'
+    ];
+
+    /**
      * @var string
      */
     protected $propertyName;
@@ -38,32 +50,6 @@ class ManyToManyFilter implements FilterInterface
      * @var
      */
     protected $relationTableForeignField;
-
-    /**
-     * DomainObjectHasOneFilter constructor.
-     * @param string $propertyName
-     * @param string $foreignTable
-     * @param string $relationTable
-     * @param string $relationTableLocalField
-     * @param string $relationTableForeignField
-     * @param string $foreignLabel
-     * @internal param string $foreignField
-     */
-    public function __construct(
-        string $propertyName,
-        string $foreignTable,
-        string $relationTable,
-        string $relationTableLocalField,
-        string $relationTableForeignField,
-        string $foreignLabel
-    ) {
-        $this->propertyName = $propertyName;
-        $this->foreignTable = $foreignTable;
-        $this->relationTable = $relationTable;
-        $this->relationTableLocalField = $relationTableLocalField;
-        $this->relationTableForeignField = $relationTableForeignField;
-        $this->foreignLabel = $foreignLabel;
-    }
 
     /**
      * @param QueryBuilder $query
