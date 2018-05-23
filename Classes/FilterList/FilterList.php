@@ -16,16 +16,6 @@ class FilterList implements FilterListInterface
     protected $filterSet;
 
     /**
-     * @var int
-     */
-    protected $page = 1;
-
-    /**
-     * @var int
-     */
-    protected $pageSize = 10;
-
-    /**
      * @var array
      */
     protected $filters = [];
