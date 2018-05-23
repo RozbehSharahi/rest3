@@ -148,6 +148,7 @@ class FilterList implements FilterListInterface
     public function setFilterSet(array $filterSet): FilterListInterface
     {
         $this->filterSet = $filterSet;
+        return $this;
     }
 
     /**

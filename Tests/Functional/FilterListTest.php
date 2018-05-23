@@ -2,6 +2,11 @@
 
 namespace TYPO3\CMS\Core\Tests\Functional;
 
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Uri;
+use RozbehSharahi\Rest3\DispatcherInterface;
+use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\FilterList\Filter\FilterInterface;
 use RozbehSharahi\Rest3\FilterList\Filter\ManyToManyFilter;
 use RozbehSharahi\Rest3\FilterList\FilterList;
@@ -197,6 +202,75 @@ class FilterListTest extends FunctionalTestBase
             return $item['count'] > 0;
         }));
 
+    }
+
+    /**
+     * @test
+     */
+    public function canSeeListOnJsonApi()
+    {
+        Exception::setDebugMode(true);
+        $this->setUpTestWebsite('
+            plugin.tx_rest3.settings.routes.seminar.listHandler {
+                className = RozbehSharahi\Rest3\ListHandler\ListHandler
+                methodName = dispatch
+                filterSets {
+                     mySet {
+                        title {
+                            className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
+                            propertyName = title
+                        }
+                    }
+                }
+            }
+        ');
+
+        $this->setUpDatabaseData('tx_rexample_domain_model_seminar', [
+            [
+                'title' => 'Seminar 1'
+            ],
+            [
+                'title' => 'Seminar 2'
+            ],
+            [
+                'title' => 'Seminar 3'
+            ],
+        ]);
+
+        $this->setUpDatabaseData('tx_rexample_domain_model_event', [
+            [
+                'title' => 'Event 1',
+                'seminar' => 1,
+            ],
+            [
+                'title' => 'Event 2',
+                'seminar' => 1,
+            ],
+            [
+                'title' => 'Event 3',
+                'seminar' => 2,
+            ],
+        ]);
+
+        /** @var DispatcherInterface $dispatcher */
+        $dispatcher = $this->getObjectManager()->get(DispatcherInterface::class);
+        $response = $dispatcher->dispatch(
+            (new ServerRequest('GET', new Uri('/rest3/seminars')))
+                ->withQueryParams([
+                    '_listHandler' => [
+                        'filterSet' => 'mySet'
+                    ],
+                    'include' => 'events'
+                ]),
+            new Response()
+        );
+        $result = json_decode($response->getBody(), true);
+        self::assertEquals(200, $response->getStatusCode());
+        self::assertNotEmpty($result['meta']);
+        self::assertNotEmpty($result['meta']['filterItems']);
+        self::assertEquals('Seminar 1', $result['data'][0]['attributes']['title']);
+        self::assertCount(3, $result['data']);
+        self::assertCount(3, $result['included']);
     }
 
     /**

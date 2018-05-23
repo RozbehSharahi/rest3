@@ -3,6 +3,7 @@
 namespace RozbehSharahi\Rest3\FilterList;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 
 interface FilterListInterface
 {
@@ -18,7 +19,7 @@ interface FilterListInterface
     public function getFilterItems(): array;
 
     /**
-     * @param mixed $baseQuery
+     * @param QueryBuilder|QueryInterface|\TYPO3\CMS\Core\Database\Query\QueryBuilder $baseQuery
      * @return FilterListInterface
      */
     public function setBaseQuery($baseQuery): FilterListInterface;

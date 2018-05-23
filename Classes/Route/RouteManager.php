@@ -34,10 +34,10 @@ class RouteManager implements RouteManagerInterface
     /**
      * @param string $route
      * @param string|null $key
-     * @return array
+     * @return mixed
      * @throws \Exception
      */
-    public function getRouteConfiguration(string $route, string $key = null): array
+    public function getRouteConfiguration(string $route, string $key = null)
     {
         // Configuration has to exist
         if (!$this->hasRouteConfiguration($route)) {
@@ -51,6 +51,10 @@ class RouteManager implements RouteManagerInterface
         // Configuration must be valid
         if (!$this->routeConfigurationIsValid($configuration)) {
             throw new \Exception("Could not find configuration for route: $route");
+        }
+
+        if ($key && !ArrayUtility::isValidPath($configuration, $key, '.')) {
+            return null;
         }
 
         return !$key ? $configuration : ArrayUtility::getValueByPath($configuration, $key, '.');

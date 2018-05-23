@@ -8,6 +8,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Exception;
+use RozbehSharahi\Rest3\ListHandler\ListHandlerInterface;
 use RozbehSharahi\Rest3\Normalizer\Normalizer;
 use RozbehSharahi\Rest3\Route\RouteAccessControlInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
@@ -31,18 +32,6 @@ class DomainObjectController implements DispatcherInterface
      * @var string
      */
     protected $routeKey = null;
-
-    /**
-     * Will hold the full qualified model name
-     *
-     * @var string
-     */
-    protected $modelName;
-
-    /**
-     * @var string
-     */
-    protected $repositoryName;
 
     /**
      * @var RepositoryInterface
@@ -252,6 +241,10 @@ class DomainObjectController implements DispatcherInterface
      */
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        if ($listHandlerKey = $request->getQueryParams()[ListHandlerInterface::QUERY_PARAM]) {
+            return $this->callListHandler($request, $response);
+        }
+
         return $this->responseService->jsonResponse(
             $this->normalizer->normalize(
                 $this->getRepository()->findAll()->toArray(),
@@ -347,7 +340,8 @@ class DomainObjectController implements DispatcherInterface
     protected function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         /** @var AbstractDomainObject $model */
-        $model = new $this->modelName;
+        $modelName = $this->routeManager->getRouteConfiguration($this->routeKey, 'modelName');
+        $model = new $modelName;
         $requestData = $this->requestService->getData($request);
         $this->assertUpdateRequest($requestData);
 
@@ -398,7 +392,8 @@ class DomainObjectController implements DispatcherInterface
     {
         if (is_null($this->repository)) {
             /** @var RepositoryInterface $repository */
-            $repository = clone $this->objectManager->get($this->repositoryName);
+            $repositoryName = $this->routeManager->getRouteConfiguration($this->routeKey, 'repositoryName');
+            $repository = clone $this->objectManager->get($repositoryName);
             $this->repository = $repository;
             $this->repository->setDefaultQuerySettings((new Typo3QuerySettings())
                 ->setRespectStoragePage(false)
@@ -407,6 +402,23 @@ class DomainObjectController implements DispatcherInterface
             );
         }
         return $this->repository;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+    protected function callListHandler(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $configuration = $this->routeManager->getRouteConfiguration($this->routeKey, "listHandler");
+
+        $this->assert(!empty($configuration), 'List handler not configured for ' . $this->routeKey);
+        $this->assert(!empty($configuration['className']), 'List handler config invalid ' . $this->routeKey);
+        $this->assert(!empty($configuration['methodName']), 'List handler config invalid ' . $this->routeKey);
+
+        $listHandler = $this->objectManager->get($configuration['className']);
+        return $listHandler->{$configuration['methodName']}($request, $response, $this->routeKey);
     }
 
     /**
