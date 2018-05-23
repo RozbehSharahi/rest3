@@ -55,7 +55,8 @@ trait FilterTrait
      */
     protected function hasJoin(QueryBuilder $query, string $tableName): bool
     {
-        foreach (reset($query->getQueryPart('join')) as $join) {
+        $joins = reset($query->getQueryPart('join')) ?: [];
+        foreach ($joins as $join) {
             if (trim($join['joinTable'], '`') === $tableName) {
                 return true;
             }
