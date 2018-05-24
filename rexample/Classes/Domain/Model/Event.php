@@ -24,6 +24,11 @@ class Event extends AbstractEntity
     protected $locations;
 
     /**
+     * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\RozbehSharahi\Rexample\Domain\Model\Topic>
+     */
+    protected $topics;
+
+    /**
      * Event constructor.
      */
     public function __construct()
@@ -99,6 +104,24 @@ class Event extends AbstractEntity
     public function removeLocation(Location $location)
     {
         $this->locations->detach($location);
+    }
+
+    /**
+     * @return ObjectStorage
+     */
+    public function getTopics()
+    {
+        return $this->topics;
+    }
+
+    /**
+     * @param ObjectStorage $topics
+     * @return Event
+     */
+    public function setTopics(ObjectStorage $topics)
+    {
+        $this->topics = $topics;
+        return $this;
     }
 
 }

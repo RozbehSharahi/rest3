@@ -17,9 +17,9 @@ interface RouteManagerInterface
      *
      * @param string $route
      * @param string|null $key
-     * @return array
+     * @return mixed
      */
-    public function getRouteConfiguration(string $route, string $key = null): array;
+    public function getRouteConfiguration(string $route, string $key = null);
 
     /**
      * Checks for existence of a route
