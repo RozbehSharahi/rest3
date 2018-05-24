@@ -3,8 +3,9 @@
 namespace RozbehSharahi\Rest3\FilterList\Filter;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Psr\Http\Message\ServerRequestInterface;
 
-class ManyToManyFilter implements FilterInterface
+class ManyToManyFilter implements FilterInterface, JsonApiFilterInterface
 {
 
     use FilterTrait;
@@ -153,4 +154,17 @@ class ManyToManyFilter implements FilterInterface
             ->fetchAll();
     }
 
+    /**
+     * This will be merged into the filter item
+     *
+     * @param ServerRequestInterface $request
+     * @param array $filterItems
+     * @param string $name
+     * @param array $values
+     * @return array
+     */
+    public function getMeta(ServerRequestInterface $request, array $filterItems, string $name, array $values): array
+    {
+        return $this->populateFilterItemWithFilterSelectors($request, $filterItems, $name);
+    }
 }

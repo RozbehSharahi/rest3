@@ -3,6 +3,8 @@
 namespace RozbehSharahi\Rest3\FilterList\Filter;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Psr\Http\Message\ServerRequestInterface;
+use RozbehSharahi\Rest3\Pagination\PaginationInterface;
 
 trait FilterTrait
 {
@@ -112,6 +114,57 @@ trait FilterTrait
         return array_map(function ($value) use ($quote) {
             return $quote . $this->escape($value) . $quote;
         }, $values);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param array $filterItems
+     * @param string $name
+     * @return array
+     */
+    protected function populateFilterItemWithFilterSelectors(
+        ServerRequestInterface $request,
+        array $filterItems,
+        string $name
+    ): array {
+        $query = [];
+        parse_str($request->getUri()->getQuery(), $query);
+
+        // Make sure filter is part of the query
+        $query['filter'] = $query['filter'] ?: [];
+
+        // Transform string filters to array
+        foreach ($query['filter'] as $filterName => $filterValue) {
+            if (is_string($filterValue)) {
+                $query['filter'][$filterName] = [$query['filter'][$filterName]];
+            }
+        }
+
+        // When setting new filter we have to reset page number settings
+        unset($query['page'][PaginationInterface::QUERY_PARAM_PAGE_NUMBER]);
+
+        foreach ($filterItems as &$filterItem) {
+            $filterItem['links'] = [];
+            if (is_string($query['filter'][$name])) {
+                $query['filter'][$name] = [$query['filter'][$name]];
+            };
+            $isActive = in_array($filterItem['identification'], $query['filter'][$name] ?: []);
+            if (!$isActive) {
+                $activateQuery = $query;
+                $activateQuery['filter'][$name][] = $filterItem['identification'];
+                $filterItem['links']['activate'] = $request->getUri()
+                    ->withQuery(http_build_query($activateQuery))->__toString();
+            } else {
+                $indexOfValue = array_search($filterItem['identification'], $query['filter'][$name] ?: []);
+                $activateQuery = $query;
+                if ($indexOfValue !== false) {
+                    unset($activateQuery['filter'][$name][$indexOfValue]);
+                }
+                $filterItem['links']['deactivate'] = $request->getUri()
+                    ->withQuery(http_build_query($activateQuery))->__toString();
+            }
+        }
+        return $filterItems;
     }
 
     /**

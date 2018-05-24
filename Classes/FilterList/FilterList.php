@@ -2,13 +2,20 @@
 
 namespace RozbehSharahi\Rest3\FilterList;
 
+use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\FilterList\Filter\FilterInterface;
+use RozbehSharahi\Rest3\FilterList\Filter\JsonApiFilterInterface;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\Storage\Typo3DbQueryParser;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 
 class FilterList implements FilterListInterface
 {
+
+    /**
+     * @var ServerRequestInterface
+     */
+    protected $request;
 
     /**
      * @var FilterInterface[]
@@ -64,12 +71,19 @@ class FilterList implements FilterListInterface
     public function getFilterItems(): array
     {
         $filterItems = [];
-        foreach ($this->filterSet as $index => $filterSet) {
-            $filterItems[$index] = $filterSet->getFilterItems(
+        foreach ($this->filterSet as $index => $filter) {
+            $filters = $this->filters[$index] ?: [];
+            $filterItems[$index] = $filter->getFilterItems(
                 $this->createFilterQuery([$index]),
                 clone $this->baseQuery,
-                $this->filters[$index] ?: []
+                $filters
             );
+            if ($filter instanceof JsonApiFilterInterface && $this->request) {
+                $filterItems[$index] = array_replace_recursive(
+                    $filterItems[$index],
+                    $filter->getMeta($this->request, $filterItems[$index], $index, $filters)
+                );
+            }
         }
         return $filterItems;
     }
@@ -102,6 +116,16 @@ class FilterList implements FilterListInterface
             'items' => $this->getQuery()->execute()->fetchAll(),
             'filterItems' => $this->getFilterItems()
         ];
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return FilterListInterface
+     */
+    public function setRequest(ServerRequestInterface $request): FilterListInterface
+    {
+        $this->request = $request;
+        return $this;
     }
 
     /**

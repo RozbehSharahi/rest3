@@ -49,6 +49,11 @@ plugin.tx_rest3 {
                                 relationTableLocalField = uid_foreign
                                 relationTableForeignField = uid_local
                             }
+
+                            title {
+                                className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
+                                propertyName = title
+                            }
                         }
                     }
                 }

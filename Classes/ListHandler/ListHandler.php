@@ -9,6 +9,7 @@ use RozbehSharahi\Rest3\Exception;
 use RozbehSharahi\Rest3\FilterList\Filter\FilterInterface;
 use RozbehSharahi\Rest3\FilterList\FilterListInterface;
 use RozbehSharahi\Rest3\Normalizer\Normalizer;
+use RozbehSharahi\Rest3\Pagination\PaginationInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 use RozbehSharahi\Rest3\Service\RequestService;
 use RozbehSharahi\Rest3\Service\ResponseService;
@@ -16,6 +17,7 @@ use TYPO3\CMS\Core\Http\DispatcherInterface;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 use TYPO3\CMS\Extbase\Persistence\RepositoryInterface;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class ListHandler implements ListHandlerInterface, DispatcherInterface
 {
@@ -110,6 +112,7 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         /** @var FilterListInterface $filterList */
         $filterList = $this->objectManager->get(FilterListInterface::class);
         $filterList
+            ->setRequest($request)
             ->setBaseQuery($this->getBaseQuery())
             ->setFilterSet($this->getFilterSet($parameters['filterSet']))
             ->setFilters($this->getFilters($request));
@@ -117,15 +120,22 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
 
         $query = $this->getRepository()->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        $domainObjects = [];
-        if (!empty($ids)) {
-            $domainObjects = $query->matching($query->in('uid', $ids))->execute();
-        }
+        $domainObjectsQuery = $query->matching($query->in('uid', !empty($ids) ? $ids : [-1]));
+
+        /** @var PaginationInterface $pagination */
+        $pagination = $this->objectManager->get(PaginationInterface::class);
+        $pageSize = (int)$request->getQueryParams()['page'][PaginationInterface::QUERY_PARAM_PAGE_SIZE] ?: 20;
+        $pageNumber = (int)$request->getQueryParams()['page'][PaginationInterface::QUERY_PARAM_PAGE_NUMBER] ?: 1;
+        $page = $pagination
+            ->setQuery($domainObjectsQuery)
+            ->setPageSize($pageSize)
+            ->getPage($pageNumber);
 
         return $this->responseService->jsonResponse(
             array_replace_recursive(
+                $pagination->getMeta($pageNumber, $request),
                 ['meta' => ['filter' => ['items' => $filterList->getFilterItems()]]],
-                $this->normalizer->normalize($domainObjects, $this->requestService->getIncludes($request))
+                $this->normalizer->normalize($page, $this->requestService->getIncludes($request))
             )
         );
     }

@@ -3,10 +3,17 @@
 namespace RozbehSharahi\Rest3\FilterList;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Extbase\Persistence\QueryInterface;
 
 interface FilterListInterface
 {
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return FilterListInterface
+     */
+    public function setRequest(ServerRequestInterface $request): FilterListInterface;
 
     /**
      * @return QueryBuilder
