@@ -117,7 +117,10 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
 
         $query = $this->getRepository()->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        $domainObjects = !empty($ids) ? $query->matching($query->in('uid', $ids))->execute() : [];
+        $domainObjects = [];
+        if (!empty($ids)) {
+            $domainObjects = $query->matching($query->in('uid', $ids))->execute();
+        }
 
         return $this->responseService->jsonResponse(
             array_replace_recursive(
@@ -138,6 +141,7 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         $filterConfiguration = $this->routeManager
             ->getRouteConfiguration($this->routeKey, "listHandler.filterSets.$filterSetName");
 
+        $this->assert(!empty($filterConfiguration), "No configuration for filter-set `$filterSetName`");
         $this->assert(is_array($filterConfiguration), "Wrong configuration for filter-set `$filterSetName`");
 
         foreach ($filterConfiguration as $name => $configuration) {
@@ -172,6 +176,7 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
         /** @var QueryInterface $query */
         $query = $this->getRepository()->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching($query->greaterThan('uid', 0));
         return $query;
     }
 
@@ -182,10 +187,13 @@ class ListHandler implements ListHandlerInterface, DispatcherInterface
     public function getFilters(ServerRequestInterface $request): array
     {
         $filters = $request->getQueryParams()['filter'] ?: [];
-        $this->assert(is_array($filters), 'Filter parameter (?filter[attribute]=...) must be of type array');
+        $this->assert(is_array($filters), 'Filter parameter must be of type array: (?filter[attribute]=...)');
         foreach ($filters as $index => $filter) {
             if (is_string($filter)) {
                 $filters[$index] = [$filter];
+            }
+            foreach ($filters[$index] as $value) {
+                $this->assert(is_string($value), 'Values of a filter have to be of type string');
             }
         }
         return $filters;

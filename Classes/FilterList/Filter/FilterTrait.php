@@ -82,6 +82,39 @@ trait FilterTrait
     }
 
     /**
+     * @param string $unescaped
+     * @return string
+     */
+    protected function escape(string $unescaped): string
+    {
+        $replacements = array(
+            "\x00" => '\x00',
+            "\n" => '\n',
+            "\r" => '\r',
+            "\\" => '\\\\',
+            "'" => "\'",
+            '"' => '\"',
+            "\x1a" => '\x1a'
+        );
+        return strtr($unescaped, $replacements);
+    }
+
+    /**
+     * @todo remove this again and do it correct,
+     * just been to tired to fix this.
+     *
+     * @param array $values
+     * @param string $quote
+     * @return array
+     */
+    protected function escapeValues(array $values, string $quote = '"'): array
+    {
+        return array_map(function ($value) use ($quote) {
+            return $quote . $this->escape($value) . $quote;
+        }, $values);
+    }
+
+    /**
      * @param bool $assertion
      * @param mixed $message
      * @throws \Exception

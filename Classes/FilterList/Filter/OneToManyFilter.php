@@ -57,7 +57,7 @@ class OneToManyFilter implements FilterInterface
         }
 
         $query->andWhere(
-            $query->expr()->in("$this->foreignTable.uid", $values)
+            $query->expr()->in("$this->foreignTable.uid", $this->escapeValues($values))
         );
         return $query;
     }

@@ -40,7 +40,7 @@ class ManyToOneFilter implements FilterInterface
             return $query;
         }
 
-        $query->andWhere($query->expr()->in($this->propertyName, $values));
+        $query->andWhere($query->expr()->in($this->propertyName, $this->escapeValues($values)));
         return $query;
     }
 

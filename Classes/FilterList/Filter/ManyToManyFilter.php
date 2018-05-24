@@ -74,7 +74,7 @@ class ManyToManyFilter implements FilterInterface
         }
 
         $query->andWhere(
-            $query->expr()->in("$this->relationTable.$this->relationTableForeignField", $values)
+            $query->expr()->in("$this->relationTable.$this->relationTableForeignField", $this->escapeValues($values))
         );
         return $query;
     }

@@ -30,10 +30,9 @@ class AttributeFilter implements FilterInterface
             return $query;
         }
 
-        return $query->andWhere($query->expr()->in($this->getMainAlias($query) . '.' . $this->propertyName,
-            array_map(function ($value) {
-                return "'$value'";
-            }, $values)));
+        return $query->andWhere(
+            $query->expr()->in($this->getMainAlias($query) . '.' . $this->propertyName, $this->escapeValues($values))
+        );
     }
 
     /**
