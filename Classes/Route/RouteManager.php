@@ -53,7 +53,7 @@ class RouteManager implements RouteManagerInterface
             throw new \Exception("Route configuration not valid for route: $route");
         }
 
-        if(!$key) {
+        if (!$key) {
             return $configuration;
         }
 
@@ -82,7 +82,6 @@ class RouteManager implements RouteManagerInterface
     protected function routeConfigurationIsValid(array $routeConfiguration): bool
     {
         return (
-            !empty($routeConfiguration['strategy']) &&
             (is_null($routeConfiguration['readOnlyProperties']) || is_array($routeConfiguration['readOnlyProperties'])) &&
             (is_null($routeConfiguration['permissions']) || is_array($routeConfiguration['permissions']))
         );

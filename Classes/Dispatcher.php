@@ -5,12 +5,12 @@ namespace RozbehSharahi\Rest3;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RozbehSharahi\Rest3\Authentication\TokenManagerInterface;
-use RozbehSharahi\Rest3\RequestStrategy\RequestStrategyManagerInterface;
 use RozbehSharahi\Rest3\Route\RouteManagerInterface;
 use RozbehSharahi\Rest3\Service\FrontendUserService;
 use RozbehSharahi\Rest3\Service\RequestService;
 use RozbehSharahi\Rest3\Service\ResponseService;
 use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\DispatcherInterface
 {
@@ -18,6 +18,19 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      * @var string
      */
     protected $entryPoint = '/rest3';
+
+    /**
+     * @var ObjectManager
+     */
+    protected $objectManager;
+
+    /**
+     * @param ObjectManager $objectManager
+     */
+    public function injectObjectManager(ObjectManager $objectManager)
+    {
+        $this->objectManager = $objectManager;
+    }
 
     /**
      * @var RouteManagerInterface
@@ -30,19 +43,6 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
     public function injectRouteManager(RouteManagerInterface $routeManager)
     {
         $this->routeManager = $routeManager;
-    }
-
-    /**
-     * @var RequestStrategyManagerInterface
-     */
-    protected $requestStrategyManager;
-
-    /**
-     * @param RequestStrategyManagerInterface $requestStrategyManager
-     */
-    public function injectRequestStrategyManager(RequestStrategyManagerInterface $requestStrategyManager)
-    {
-        $this->requestStrategyManager = $requestStrategyManager;
     }
 
     /**
@@ -104,7 +104,7 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      * @param ResponseInterface $response
      * @return ResponseInterface
      */
-    public function dispatch(ServerRequestInterface $request, ResponseInterface $response)
+    public function dispatch(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $this->authenticate($request);
 
@@ -122,13 +122,12 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
 
         $configuration = $this->routeManager->getRouteConfiguration($this->requestService->getRouteKey($request));
 
+        /** @var object $routeController */
+        $routeController = $this->objectManager->get($configuration['className']);
+
         // We render the response or an rest exception
         try {
-            return $this->requestStrategyManager->run(
-                $configuration['strategy'],
-                $configuration,
-                [$request, $response, $this->requestService->getRouteKey($request)]
-            );
+            return $routeController->dispatch($request, $response, $this->requestService->getRouteKey($request));
         } catch (Exception $restException) {
             return $this->responseService->jsonResponse(
                 $restException->getPayload(),

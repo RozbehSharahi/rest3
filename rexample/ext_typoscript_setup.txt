@@ -10,7 +10,6 @@ plugin.tx_rest3 {
 
         routes {
             seminar {
-                strategy = dispatcher
                 className = RozbehSharahi\Rexample\Controller\SeminarController
                 methodName = dispatch
                 repositoryName = RozbehSharahi\Rexample\Domain\Repository\SeminarRepository
@@ -24,7 +23,6 @@ plugin.tx_rest3 {
             }
 
             event {
-                strategy = dispatcher
                 className = RozbehSharahi\Rexample\Controller\EventController
                 methodName = dispatch
                 repositoryName = RozbehSharahi\Rexample\Domain\Repository\EventRepository
@@ -47,7 +45,6 @@ plugin.tx_rest3 {
             }
 
             topic {
-                strategy = dispatcher
                 className = RozbehSharahi\Rexample\Controller\TopicController
                 methodName = dispatch
                 repositoryName = RozbehSharahi\Rexample\Domain\Repository\TopicRepository
@@ -55,7 +52,6 @@ plugin.tx_rest3 {
             }
 
             message {
-                strategy = dispatcher
                 className = RozbehSharahi\Rexample\MessageRoute
                 methodName = dispatch
             }
