@@ -386,13 +386,14 @@ class DomainObjectController implements DispatcherInterface
     protected function delete(ServerRequestInterface $request, ResponseInterface $response, $id): ResponseInterface
     {
         /** @var AbstractDomainObject $model */
+        $modelName = $this->routeManager->getRouteConfiguration($this->routeKey, 'modelName');
         $model = $this->getRepository()->findByUid($id);
         $this->assert(!empty($model), "Not found ($id)");
         $this->getRepository()->remove($model);
         $this->persistenceManager->persistAll();
         return $this->responseService->jsonResponse(
             $this->normalizer->normalize(
-                $this->modelName . " with ID `$id` was deleted"
+                $modelName . " with ID `$id` was deleted"
             )
         );
     }
