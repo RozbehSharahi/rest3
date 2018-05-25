@@ -15,16 +15,10 @@ plugin.tx_rest3 {
                 methodName = dispatch
                 repositoryName = RozbehSharahi\Rexample\Domain\Repository\SeminarRepository
                 modelName = RozbehSharahi\Rexample\Domain\Model\Seminar
-                listHandler {
-                    className = RozbehSharahi\Rest3\ListHandler\ListHandler
-                    methodName = dispatch
-                    filterSets {
-                        mySet {
-                            title {
-                                className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
-                                propertyName = title
-                            }
-                        }
+                listHandler.sets.default {
+                    title {
+                        className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
+                        propertyName = title
                     }
                 }
             }
@@ -35,26 +29,19 @@ plugin.tx_rest3 {
                 methodName = dispatch
                 repositoryName = RozbehSharahi\Rexample\Domain\Repository\EventRepository
                 modelName = RozbehSharahi\Rexample\Domain\Model\Event
-                listHandler {
-                    className = RozbehSharahi\Rest3\ListHandler\ListHandler
-                    methodName = dispatch
-                    filterSets {
-                        mySet {
-                            location {
-                                className = RozbehSharahi\Rest3\FilterList\Filter\ManyToManyFilter
-                                propertyName = title
-                                foreignLabel = title
-                                foreignTable = tx_rexample_domain_model_location
-                                relationTable = tx_rexample_location_event_mm
-                                relationTableLocalField = uid_foreign
-                                relationTableForeignField = uid_local
-                            }
-
-                            title {
-                                className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
-                                propertyName = title
-                            }
-                        }
+                listHandler.sets.default {
+                    title {
+                        className = RozbehSharahi\Rest3\FilterList\Filter\AttributeFilter
+                        propertyName = title
+                    }
+                    location {
+                        className = RozbehSharahi\Rest3\FilterList\Filter\ManyToManyFilter
+                        propertyName = title
+                        foreignLabel = title
+                        foreignTable = tx_rexample_domain_model_location
+                        relationTable = tx_rexample_location_event_mm
+                        relationTableLocalField = uid_foreign
+                        relationTableForeignField = uid_local
                     }
                 }
             }

@@ -50,14 +50,18 @@ class RouteManager implements RouteManagerInterface
 
         // Configuration must be valid
         if (!$this->routeConfigurationIsValid($configuration)) {
-            throw new \Exception("Could not find configuration for route: $route");
+            throw new \Exception("Route configuration not valid for route: $route");
+        }
+
+        if(!$key) {
+            return $configuration;
         }
 
         if ($key && !ArrayUtility::isValidPath($configuration, $key, '.')) {
             return null;
         }
 
-        return !$key ? $configuration : ArrayUtility::getValueByPath($configuration, $key, '.');
+        return ArrayUtility::getValueByPath($configuration, $key, '.');
     }
 
     /**

@@ -244,9 +244,7 @@ class FilterListTest extends FunctionalTestBase
         $response = $dispatcher->dispatch(
             (new ServerRequest('GET', new Uri('/rest3/seminars')))
                 ->withQueryParams([
-                    '_listHandler' => [
-                        'filterSet' => 'mySet'
-                    ],
+                    '_list' => 1,
                     'filter' => [
                         'title' => 'Seminar 1',
                     ],

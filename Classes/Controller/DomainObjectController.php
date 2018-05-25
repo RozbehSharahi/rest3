@@ -241,8 +241,8 @@ class DomainObjectController implements DispatcherInterface
      */
     public function findAll(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        if ($listHandlerKey = $request->getQueryParams()[ListHandlerInterface::QUERY_PARAM]) {
-            return $this->callListHandler($request, $response);
+        if ($request->getQueryParams()[ListHandlerInterface::QUERY_PARAM]) {
+            return $this->list($request, $response);
         }
 
         return $this->responseService->jsonResponse(
@@ -251,6 +251,18 @@ class DomainObjectController implements DispatcherInterface
                 $this->requestService->getIncludes($request)
             )
         );
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+    protected function list(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        /** @var ListHandlerInterface $listHandler */
+        $listHandler = $this->objectManager->get(ListHandlerInterface::class);
+        return $listHandler->list($request, $response, $this->routeKey);
     }
 
     /**
@@ -402,23 +414,6 @@ class DomainObjectController implements DispatcherInterface
             );
         }
         return $this->repository;
-    }
-
-    /**
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @return ResponseInterface
-     */
-    protected function callListHandler(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-    {
-        $configuration = $this->routeManager->getRouteConfiguration($this->routeKey, "listHandler");
-
-        $this->assert(!empty($configuration), 'List handler not configured for ' . $this->routeKey);
-        $this->assert(!empty($configuration['className']), 'List handler config invalid ' . $this->routeKey);
-        $this->assert(!empty($configuration['methodName']), 'List handler config invalid ' . $this->routeKey);
-
-        $listHandler = $this->objectManager->get($configuration['className']);
-        return $listHandler->{$configuration['methodName']}($request, $response, $this->routeKey);
     }
 
     /**
