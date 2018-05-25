@@ -23,9 +23,10 @@ class AttributeFilter implements FilterInterface, JsonApiFilterInterface
     /**
      * @param QueryBuilder $query
      * @param array $values
+     * @param string $name
      * @return QueryBuilder Will be used to continue query filtering
      */
-    public function addFilter(QueryBuilder $query, array $values): QueryBuilder
+    public function addFilter(QueryBuilder $query, array $values, string $name): QueryBuilder
     {
         if (empty($values)) {
             return $query;
@@ -40,9 +41,10 @@ class AttributeFilter implements FilterInterface, JsonApiFilterInterface
      * @param QueryBuilder $query
      * @param QueryBuilder $baseQuery
      * @param array $values
+     * @param string $name
      * @return array
      */
-    public function getFilterItems(QueryBuilder $query, QueryBuilder $baseQuery, array $values): array
+    public function getFilterItems(QueryBuilder $query, QueryBuilder $baseQuery, array $values, string $name): array
     {
         return $this->populateCounts(
             $this->getItems(clone $baseQuery),
@@ -88,11 +90,11 @@ class AttributeFilter implements FilterInterface, JsonApiFilterInterface
      *
      * @param ServerRequestInterface $request
      * @param array $filterItems
-     * @param string $name
      * @param array $values
+     * @param string $name
      * @return array
      */
-    public function getMeta(ServerRequestInterface $request, array $filterItems, string $name, array $values): array
+    public function getMeta(ServerRequestInterface $request, array $filterItems, array $values, string $name): array
     {
         return $this->populateFilterItemWithFilterSelectors($request, $filterItems, $name);
     }

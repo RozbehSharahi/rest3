@@ -76,12 +76,13 @@ class FilterList implements FilterListInterface
             $filterItems[$index] = $filter->getFilterItems(
                 $this->createFilterQuery([$index]),
                 clone $this->baseQuery,
-                $filters
+                $filters,
+                $index
             );
             if ($filter instanceof JsonApiFilterInterface && $this->request) {
                 $filterItems[$index] = array_replace_recursive(
                     $filterItems[$index],
-                    $filter->getMeta($this->request, $filterItems[$index], $index, $filters)
+                    $filter->getMeta($this->request, $filterItems[$index], $filters, $index)
                 );
             }
         }
@@ -101,7 +102,7 @@ class FilterList implements FilterListInterface
                 throw new \Exception("`$index` does not exist in filter set");
             }
             if (!in_array($index, $excludedFilters)) {
-                $query = $this->filterSet[$index]->addFilter($query, $values);
+                $query = $this->filterSet[$index]->addFilter($query, $values, $index);
             }
         }
         return $query;
