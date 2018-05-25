@@ -23,6 +23,6 @@ interface TokenManagerInterface
      * @param string $token
      * @return string
      */
-    public function getUserByToken(string $token): string;
+    public function getUserIdByToken(string $token): string;
 
 }

@@ -88,7 +88,7 @@ class LoginControllerTest extends FunctionalTestBase
 
         $token = $result['authentication']['token'];
         self::assertTrue($tokenManager->validate($token));
-        self::assertEquals(1, $tokenManager->getUserByToken($token));
+        self::assertEquals(1, $tokenManager->getUserIdByToken($token));
 
         Exception::setDebugMode(true);
 

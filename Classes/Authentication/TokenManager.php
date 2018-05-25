@@ -27,7 +27,11 @@ class TokenManager implements TokenManagerInterface
      */
     public function validate(string $token): bool
     {
-        return Token::validate($token, $this->getSecret());
+        try {
+            return Token::validate($token, $this->getSecret());
+        } catch (\Exception $exception) {
+            return false;
+        }
     }
 
     /**
@@ -43,7 +47,7 @@ class TokenManager implements TokenManagerInterface
      * @param string $token
      * @return string
      */
-    public function getUserByToken(string $token): string
+    public function getUserIdByToken(string $token): string
     {
         return json_decode(Token::getPayload($token), true)['user_id'] ?: null;
     }

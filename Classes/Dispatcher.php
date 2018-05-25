@@ -106,28 +106,27 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
      */
     public function dispatch(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $this->authenticate($request);
-
-        if ($this->isRestRootCall($request)) {
-            return $this->responseService->jsonResponse('Welcome to Rest3');
-        }
-
-        if (!$this->routeManager->hasRouteConfiguration($this->requestService->getRouteKey($request))) {
-            $restException = Exception::create()->addError('This route does not exist', 404);
-            return $this->responseService->jsonResponse(
-                $restException->getPayload(),
-                $restException->getStatusCode()
-            );
-        }
-
-        $configuration = $this->routeManager->getRouteConfiguration($this->requestService->getRouteKey($request));
-
-        /** @var object $routeController */
-        $routeController = $this->objectManager->get($configuration['className']);
-
-        // We render the response or an rest exception
         try {
+            $this->authenticate($request);
+
+            if ($this->isRestRootCall($request)) {
+                return $this->responseService->jsonResponse('Welcome to Rest3');
+            }
+
+            if (!$this->routeManager->hasRouteConfiguration($this->requestService->getRouteKey($request))) {
+                $restException = Exception::create()->addError('This route does not exist', 404);
+                return $this->responseService->jsonResponse(
+                    $restException->getPayload(),
+                    $restException->getStatusCode()
+                );
+            }
+
+            $configuration = $this->routeManager->getRouteConfiguration($this->requestService->getRouteKey($request));
+
+            /** @var object $routeController */
+            $routeController = $this->objectManager->get($configuration['className']);
             return $routeController->dispatch($request, $response, $this->requestService->getRouteKey($request));
+
         } catch (Exception $restException) {
             return $this->responseService->jsonResponse(
                 $restException->getPayload(),
@@ -150,13 +149,17 @@ class Dispatcher implements DispatcherInterface, \TYPO3\CMS\Core\Http\Dispatcher
         }
 
         if (!$this->tokenManager->validate($token)) {
-            throw new \Exception('Invalid token');
+            throw Exception::create()->addError('Invalid token');
         }
 
         /** @var FrontendUser $user */
         $user = $this->frontendUserService
             ->getFrontendUserRepository()
-            ->findByUid($this->tokenManager->getUserByToken($token));
+            ->findByUid($this->tokenManager->getUserIdByToken($token));
+
+        if (empty($user)) {
+            throw Exception::create()->addError('User does not exist anymore');
+        }
 
         $this->frontendUserService->authenticateUser($user);
     }
